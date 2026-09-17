@@ -792,7 +792,7 @@
           </div>
           <div class="field">
             <label for="loginPassword">Password</label>
-            <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="鈥⑩€⑩€⑩€⑩€⑩€⑩€⑩€? required />
+            <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required />
             <p class="err" id="loginPasswordErr"></p>
           </div>
           <button type="submit" class="btn btn-primary btn-block" id="loginSubmit">Sign in</button>
@@ -845,35 +845,35 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6.5h16v11H4v-11z" stroke="currentColor" stroke-width="1.5"/><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 Email
               </div>
-              <div class="dvalue mono" id="pfEmail">鈥?/div>
+              <div class="dvalue mono" id="pfEmail">—</div>
             </div>
             <div class="drow">
               <div class="dlabel">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.25" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 19c1.5-3 4-4.5 6.5-4.5S16.5 16 18.5 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 Username
               </div>
-              <div class="dvalue mono" id="pfUsername">鈥?/div>
+              <div class="dvalue mono" id="pfUsername">—</div>
             </div>
             <div class="drow">
               <div class="dlabel">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 10h16M8 3.5v4M16 3.5v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 Created
               </div>
-              <div class="dvalue mono" id="pfCreated">鈥?/div>
+              <div class="dvalue mono" id="pfCreated">—</div>
             </div>
             <div class="drow">
               <div class="dlabel">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v4.5l3 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 User ID
               </div>
-              <div class="dvalue mono" id="pfId">鈥?/div>
+              <div class="dvalue mono" id="pfId">—</div>
             </div>
           </div>
 
           <h2>Session status</h2>
           <p class="hint" style="margin:0 0 10px;color:var(--ink);font-size:14px;font-weight:500;">Current session</p>
           <span class="pill"><span class="dot" aria-hidden="true"></span>Active 路 Expires in 24h</span>
-          <p class="hint mono" id="pfExpiry">This session will expire at 鈥?</p>
+          <p class="hint mono" id="pfExpiry">This session will expire at —.</p>
 
           <h2>API Base URL</h2>
           <p class="hint" style="margin:0 0 0;color:var(--ink);font-size:14px;font-weight:500;">Your authentication API base URL</p>
@@ -923,7 +923,7 @@
             </div>
             <p class="hint" style="margin:0;color:var(--ink-2);" id="secretBannerMsg">Copy this secret now. You will not be able to see it again.</p>
             <div class="row">
-              <code id="secretValue">sec_鈥?/code>
+              <code id="secretValue">sec_…</code>
               <button type="button" class="btn btn-ghost btn-sm" id="copySecretBtn">Copy secret</button>
             </div>
           </div>
@@ -1053,16 +1053,16 @@
   "username": "alice",
   "password": "password123"
 }</div>
-          <p>Rules: email must be valid; username <code>^[A-Za-z0-9_]{3,32}$</code>; password 鈮?8 characters.</p>
+          <p>Rules: email must be valid; username <code>^[A-Za-z0-9_]{3,32}$</code>; password ≥ 8 characters.</p>
           <p>Success <code>201</code>:</p>
           <div class="codeblock">{
   "user": {
-    "id": "鈥?,
+    "id": "…",
     "email": "alice@example.com",
     "username": "alice",
     "createdAt": "2026-09-17"
   },
-  "token": "eyJhbGciOi鈥?,
+  "token": "eyJhbGciOi…",
   "expiresIn": 86400
 }</div>
         </div>
@@ -1074,7 +1074,7 @@
   "email": "alice@example.com",
   "password": "password123"
 }</div>
-          <p>Success <code>200</code> returns the same shape as register. Invalid credentials always return <code>401</code> with <code>invalid_credentials</code> 鈥?the API does not reveal whether the email exists.</p>
+          <p>Success <code>200</code> returns the same shape as register. Invalid credentials always return <code>401</code> with <code>invalid_credentials</code> — the API does not reveal whether the email exists.</p>
         </div>
 
         <div class="doc-section">
@@ -1084,10 +1084,10 @@
           <p>Success <code>200</code>:</p>
           <div class="codeblock">{
   "user": {
-    "id": "鈥?,
+    "id": "…",
     "email": "alice@example.com",
     "username": "alice",
-    "createdAt": "鈥?
+    "createdAt": "…"
   }
 }</div>
         </div>
@@ -1099,7 +1099,7 @@
 
         <div class="doc-section">
           <h2>App ID integration guide</h2>
-          <p>Each product that calls this auth service should use its own <strong>App ID</strong>. That keeps integrations isolated 鈥?you can rotate or revoke one app without affecting others.</p>
+          <p>Each product that calls this auth service should use its own <strong>App ID</strong>. That keeps integrations isolated — you can rotate or revoke one app without affecting others.</p>
 
           <div class="flow-strip" aria-label="App ID integration steps">
             <div class="flow-step">
@@ -1154,16 +1154,16 @@
 
           <h3>Integration flow</h3>
           <ol>
-            <li><strong>Create a developer account</strong> 鈥?sign up on this console (or via <code>POST /auth/register</code>).</li>
-            <li><strong>Apply for an App ID</strong> 鈥?on the <a href="#" class="js-apps">Applications</a> page, or via <code>POST /apps</code>.</li>
-            <li><strong>Store credentials</strong> 鈥?save <code>app_鈥?/code> and the one-time <code>sec_鈥?/code> in your server secret store.</li>
-            <li><strong>Call register / login</strong> 鈥?send both app headers from your <em>backend</em> when signing end users in.</li>
-            <li><strong>Use the user token</strong> 鈥?call <code>GET /auth/me</code> and logout with <code>Authorization: Bearer &lt;user_token&gt;</code>.</li>
-            <li><strong>Operate the app</strong> 鈥?rotate the secret if leaked; revoke the app to block all further logins with it.</li>
+            <li><strong>Create a developer account</strong> — sign up on this console (or via <code>POST /auth/register</code>).</li>
+            <li><strong>Apply for an App ID</strong> — on the <a href="#" class="js-apps">Applications</a> page, or via <code>POST /apps</code>.</li>
+            <li><strong>Store credentials</strong> — save <code>app_…</code> and the one-time <code>sec_…</code> in your server secret store.</li>
+            <li><strong>Call register / login</strong> — send both app headers from your <em>backend</em> when signing end users in.</li>
+            <li><strong>Use the user token</strong> — call <code>GET /auth/me</code> and logout with <code>Authorization: Bearer &lt;user_token&gt;</code>.</li>
+            <li><strong>Operate the app</strong> — rotate the secret if leaked; revoke the app to block all further logins with it.</li>
           </ol>
 
-          <h3>Step 1 鈥?Apply for credentials</h3>
-          <p><strong>UI:</strong> Sign in 鈫?<strong>Applications</strong> 鈫?<strong>Create application</strong> 鈫?copy App ID + Secret immediately (Secret is shown once).</p>
+          <h3>Step 1 — Apply for credentials</h3>
+          <p><strong>UI:</strong> Sign in → <strong>Applications</strong> → <strong>Create application</strong> → copy App ID + Secret immediately (Secret is shown once).</p>
           <p><strong>API:</strong> with a developer Bearer token:</p>
           <div class="codeblock">curl -X POST $BASE/apps \
   -H "content-type: application/json" \
@@ -1172,30 +1172,30 @@
 
 # Response (201)
 {
-  "app": { "id": "鈥?, "appId": "app_e14bab3b鈥?, "name": "Acme Dashboard", "status": "active" },
-  "appSecret": "sec_7fd81b96鈥?,
+  "app": { "id": "…", "appId": "app_e14bab3b…, "name": "Acme Dashboard", "status": "active" },
+  "appSecret": "sec_7fd81b96…,
   "warning": "Store appSecret now. It will not be shown again."
 }</div>
           <p>List / inspect apps you own:</p>
           <div class="codeblock">curl $BASE/apps -H "Authorization: Bearer &lt;developer_token&gt;"
-# 鈫?{ "apps": [ { "id", "appId", "name", "status", "createdAt", 鈥?} ] }</div>
+# → { "apps": [ { "id", "appId", "name", "status", "createdAt", … } ] }</div>
 
-          <h3>Step 2 鈥?Configure your backend</h3>
+          <h3>Step 2 — Configure your backend</h3>
           <p>Environment variables (example):</p>
           <div class="codeblock">AUTH_BASE=https://auth.dayti.de
 APP_ID=app_e14bab3b6711ae118ae68418
-APP_SECRET=sec_7fd81b9627936e5c鈥?/div>
+APP_SECRET=sec_7fd81b9627936e5c…/div>
           <div class="callout">
             <svg class="ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <div><strong>Keep secrets server-side.</strong> Never put <code>APP_SECRET</code> in browser or mobile clients. Only your backend attaches <code>X-App-Id</code> / <code>X-App-Secret</code>.</div>
           </div>
 
-          <h3>Step 3 鈥?Call auth APIs with app credentials</h3>
+          <h3>Step 3 — Call auth APIs with app credentials</h3>
           <p>Send both headers from your <strong>server</strong> on <code>/auth/register</code> and <code>/auth/login</code>:</p>
           <div class="codeblock">POST /auth/login HTTP/1.1
 content-type: application/json
 X-App-Id: app_e14bab3b6711ae118ae68418
-X-App-Secret: sec_7fd81b9627936e5c鈥?
+X-App-Secret: sec_7fd81b9627936e5c…
 {"email":"alice@example.com","password":"password123"}</div>
           <p>Success responses include the bound <code>appId</code>. Sessions created this way are tied to that app.</p>
           <div class="codeblock"># Register an end user through your app
@@ -1205,7 +1205,7 @@ curl -X POST $BASE/auth/register \
   -H "X-App-Secret: $APP_SECRET" \
   -d '{"email":"alice@example.com","username":"alice","password":"password123"}'
 
-# 鈫?201 { user, token, expiresIn, appId }
+# → 201 { user, token, expiresIn, appId }
 
 # Login an existing end user
 curl -X POST $BASE/auth/login \
@@ -1214,22 +1214,22 @@ curl -X POST $BASE/auth/login \
   -H "X-App-Secret: $APP_SECRET" \
   -d '{"email":"alice@example.com","password":"password123"}'
 
-# 鈫?200 { user, token, expiresIn, appId }</div>
+# → 200 { user, token, expiresIn, appId }</div>
           <p>Omitting both headers still works for direct first-party use. Providing only one of the two is rejected with <code>401 invalid_app_credentials</code>.</p>
 
-          <h3>Step 4 鈥?Use the user session</h3>
-          <p>After login/register, your client (or BFF) uses only the <strong>user token</strong> 鈥?never the App Secret:</p>
+          <h3>Step 4 — Use the user session</h3>
+          <p>After login/register, your client (or BFF) uses only the <strong>user token</strong> — never the App Secret:</p>
           <div class="codeblock">curl $BASE/auth/me \
   -H "Authorization: Bearer &lt;user_token&gt;"
 
-# 鈫?{ "user": { 鈥?}, "appId": "app_鈥? }
+# → { "user": { 鈥?}, "appId": "app_鈥? }
 
 curl -X POST $BASE/auth/logout \
   -H "Authorization: Bearer &lt;user_token&gt;"
 
-# 鈫?{ "ok": true }</div>
+# → { "ok": true }</div>
 
-          <h3>Step 5 鈥?Lifecycle</h3>
+          <h3>Step 5 — Lifecycle</h3>
           <table class="api-table">
             <thead>
               <tr><th>Action</th><th>When</th><th>Effect</th></tr>
@@ -1238,7 +1238,7 @@ curl -X POST $BASE/auth/logout \
               <tr>
                 <td>Rotate secret</td>
                 <td>Suspected leak / periodic rotation</td>
-                <td>Old <code>sec_鈥?/code> stops working immediately; new one returned once</td>
+                <td>Old <code>sec_…</code> stops working immediately; new one returned once</td>
               </tr>
               <tr>
                 <td>Revoke app</td>
@@ -1249,11 +1249,11 @@ curl -X POST $BASE/auth/logout \
           </table>
           <div class="codeblock">curl -X POST $BASE/apps/&lt;internal-id&gt;/rotate-secret \
   -H "Authorization: Bearer &lt;developer_token&gt;"
-# 鈫?{ app, appSecret, warning }
+# → { app, appSecret, warning }
 
 curl -X POST $BASE/apps/&lt;internal-id&gt;/revoke \
   -H "Authorization: Bearer &lt;developer_token&gt;"
-# 鈫?{ app: { status: "revoked", 鈥?} }</div>
+# → { app: { status: "revoked", … } }</div>
 
           <h3>Server-side example (Node)</h3>
           <div class="codeblock">// .env: APP_ID, APP_SECRET, AUTH_BASE
@@ -1316,7 +1316,7 @@ export async function getMe(userToken) {
               <tr>
                 <td class="path">401 invalid_credentials</td>
                 <td>End-user email/password wrong</td>
-                <td>Unrelated to App ID 鈥?fix user credentials</td>
+                <td>Unrelated to App ID — fix user credentials</td>
               </tr>
               <tr>
                 <td class="path">401 unauthorized</td>
@@ -1332,7 +1332,7 @@ export async function getMe(userToken) {
               <tr><th>Method</th><th>Path</th><th>Description</th></tr>
             </thead>
             <tbody>
-              <tr><td><span class="method post">POST</span></td><td class="path">/apps</td><td>Create app 鈥?returns App ID + one-time secret</td></tr>
+              <tr><td><span class="method post">POST</span></td><td class="path">/apps</td><td>Create app — returns App ID + one-time secret</td></tr>
               <tr><td><span class="method get">GET</span></td><td class="path">/apps</td><td>List your applications</td></tr>
               <tr><td><span class="method get">GET</span></td><td class="path">/apps/:id</td><td>Get one application</td></tr>
               <tr><td><span class="method post">POST</span></td><td class="path">/apps/:id/rotate-secret</td><td>Issue a new secret</td></tr>
@@ -1418,13 +1418,13 @@ npm run dev
           </ol>
           <h3>What we ask for</h3>
           <ul>
-            <li><strong>Email</strong> 鈥?used to sign in. Must look like <code>name@example.com</code>.</li>
-            <li><strong>Username</strong> 鈥?3鈥?2 characters: letters, numbers, underscore only.</li>
-            <li><strong>Password</strong> 鈥?at least 8 characters. Longer is better.</li>
+            <li><strong>Email</strong> — used to sign in. Must look like <code>name@example.com</code>.</li>
+            <li><strong>Username</strong> 鈥?3–32 characters: letters, numbers, underscore only.</li>
+            <li><strong>Password</strong> — at least 8 characters. Longer is better.</li>
           </ul>
           <div class="callout">
             <svg class="ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            <div>If the email or username is already taken, you鈥檒l see <strong>Email or username already taken</strong>. Try a different value 鈥?we never show who already owns an email.</div>
+            <div>If the email or username is already taken, you’ll see <strong>Email or username already taken</strong>. Try a different value — we never show who already owns an email.</div>
           </div>
         </div>
 
@@ -1435,7 +1435,7 @@ npm run dev
             <li>Enter the email and password you registered with.</li>
             <li>Choose <strong>Sign in</strong>.</li>
           </ol>
-          <p>Wrong email or password shows a single message: <strong>Invalid email or password</strong>. That is intentional 鈥?it does not tell you whether the account exists.</p>
+          <p>Wrong email or password shows a single message: <strong>Invalid email or password</strong>. That is intentional — it does not tell you whether the account exists.</p>
           <div class="callout">
             <svg class="ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <div><strong>Prototype demo.</strong> In this interactive mock you can also try <code>alice@example.com</code> / <code>password123</code>.</div>
@@ -1447,8 +1447,8 @@ npm run dev
           <p>After a successful sign-in you land on <strong>Profile</strong>, which shows:</p>
           <ul>
             <li><strong>Email</strong>, <strong>Username</strong>, <strong>Created</strong>, and <strong>User ID</strong></li>
-            <li><strong>Session status</strong> 鈥?a green Active pill and when this session expires</li>
-            <li><strong>API Base URL</strong> 鈥?only relevant if you are also integrating the API</li>
+            <li><strong>Session status</strong> — a green Active pill and when this session expires</li>
+            <li><strong>API Base URL</strong> — only relevant if you are also integrating the API</li>
           </ul>
           <p>These fields mirror the account we store for you. Passwords are never shown here (or anywhere).</p>
         </div>
@@ -1457,14 +1457,14 @@ npm run dev
           <h2>Sessions &amp; security</h2>
           <ul>
             <li>Signing in creates a <strong>session</strong> that stays valid until it expires (default 24 hours) or you sign out.</li>
-            <li>Signing out immediately revokes that session 鈥?the same token cannot be used again.</li>
+            <li>Signing out immediately revokes that session — the same token cannot be used again.</li>
             <li>If a session expires or is revoked, you are returned to the sign-in screen.</li>
             <li>On a shared computer, always <strong>Sign out</strong> when finished.</li>
           </ul>
           <h3>What we store</h3>
           <ul>
             <li>Email and username (as you entered them)</li>
-            <li>A one-way password hash 鈥?never your password in plain text</li>
+            <li>A one-way password hash — never your password in plain text</li>
             <li>Account creation time and active session records</li>
           </ul>
         </div>
@@ -1486,7 +1486,7 @@ npm run dev
             <tbody>
               <tr>
                 <td>Invalid email or password</td>
-                <td>Check spelling and caps lock; reset is not available in this version 鈥?register again if needed.</td>
+                <td>Check spelling and caps lock; reset is not available in this version — register again if needed.</td>
               </tr>
               <tr>
                 <td>Email is invalid</td>
@@ -1605,7 +1605,7 @@ npm run dev
         if (loading) {
           btn.disabled = true;
           btn.dataset.label = btn.textContent;
-          btn.innerHTML = '<span class="spinner" aria-hidden="true"></span> ' + (label || "Working鈥?);
+          btn.innerHTML = '<span class="spinner" aria-hidden="true"></span> ' + (label || "Working…");
         } else {
           btn.disabled = false;
           btn.textContent = btn.dataset.label || label || "Submit";
@@ -1615,7 +1615,7 @@ npm run dev
       function fillProfile(user) {
         $("pfEmail").textContent = user.email;
         $("pfUsername").textContent = user.username;
-        $("pfCreated").textContent = user.createdAt || user.created_at || "鈥?;
+        $("pfCreated").textContent = user.createdAt || user.created_at || "—";
         $("pfId").textContent = user.id;
         const exp = new Date(Date.now() + 24 * 3600 * 1000);
         $("pfExpiry").textContent = "This session will expire at " + exp.toISOString().replace(/\.\d{3}Z$/, "Z") + ".";
@@ -1810,7 +1810,7 @@ npm run dev
           return;
         }
         const btn = $("appSubmit");
-        setLoading(btn, true, "Creating鈥?);
+        setLoading(btn, true, "Creating…");
         try {
           await new Promise((r) => setTimeout(r, 400));
           const { app, appSecret } = mockApps.create(name, $("appDesc").value.trim());
@@ -1909,7 +1909,7 @@ npm run dev
         if (!ok) return;
 
         const btn = $("loginSubmit");
-        setLoading(btn, true, "Signing in鈥?);
+        setLoading(btn, true, "Signing in…");
         try {
           await new Promise((r) => setTimeout(r, 450));
           const res = mockLogin(email, password);
@@ -1940,13 +1940,13 @@ npm run dev
         const confirm = $("regConfirm").value;
         let ok = true;
         if (!emailRe.test(email)) { setFieldErr("regEmail", "regEmailErr", "Email is invalid"); ok = false; }
-        if (!userRe.test(username)) { setFieldErr("regUsername", "regUsernameErr", "3鈥?2 letters, numbers, underscore"); ok = false; }
+        if (!userRe.test(username)) { setFieldErr("regUsername", "regUsernameErr", "3–32 letters, numbers, underscore"); ok = false; }
         if (password.length < 8) { setFieldErr("regPassword", "regPasswordErr", "Password must be at least 8 characters"); ok = false; }
         if (confirm !== password) { setFieldErr("regConfirm", "regConfirmErr", "Passwords do not match"); ok = false; }
         if (!ok) return;
 
         const btn = $("regSubmit");
-        setLoading(btn, true, "Creating鈥?);
+        setLoading(btn, true, "Creating…");
         try {
           await new Promise((r) => setTimeout(r, 500));
           const res = mockRegister({ email, username, password });

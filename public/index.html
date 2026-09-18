@@ -898,6 +898,10 @@ h2 {
   color: var(--accent);
   flex-shrink: 0;
 }
+.avatar[hidden],
+.avatar-fallback[hidden] {
+  display: none !important;
+}
 .profile-head-text {
   min-width: 0;
   flex: 1;
@@ -913,6 +917,15 @@ h2 {
   align-items: center;
   flex-shrink: 0;
 }
+.profile-edit-panel {
+  margin: 0 0 28px;
+  padding: 20px 20px 8px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+.profile-edit-panel[hidden] { display: none !important; }
+.profile-head-actions { flex-wrap: wrap; justify-content: flex-end; }
 
 /* AppID flow */
 .flow-strip {
@@ -1158,8 +1171,40 @@ h2 {
               <p class="lede" style="margin:0;">Your account and session details.</p>
             </div>
             <div class="profile-head-actions">
+              <button type="button" class="btn btn-ghost btn-sm" id="editProfileBtn">Edit profile</button>
               <button type="button" class="btn btn-ghost btn-sm" id="refreshAvatarBtn" title="Generate a new default avatar">New avatar</button>
             </div>
+          </div>
+
+          <div class="profile-edit-panel" id="profileEditPanel" hidden>
+            <h2 style="margin-top:0;">Account details</h2>
+            <p class="hint" style="margin:0 0 14px;color:var(--ink-2);">Update your email, username, or password.</p>
+            <form class="form" id="profileEditForm" novalidate style="margin-top:0;max-width:480px;">
+              <div class="banner" id="profileEditBanner" role="alert"></div>
+              <div class="field">
+                <label for="editEmail">Email</label>
+                <input id="editEmail" name="email" type="email" autocomplete="email" required />
+                <p class="err" id="editEmailErr"></p>
+              </div>
+              <div class="field">
+                <label for="editUsername">Username</label>
+                <input id="editUsername" name="username" type="text" autocomplete="username" required />
+                <p class="err" id="editUsernameErr"></p>
+              </div>
+              <div class="field">
+                <label for="editCurrentPassword">Current password <span style="font-weight:400;color:var(--ink-3)">(only to change password)</span></label>
+                <input id="editCurrentPassword" name="currentPassword" type="password" autocomplete="current-password" placeholder="Leave blank to keep password" />
+              </div>
+              <div class="field">
+                <label for="editNewPassword">New password <span style="font-weight:400;color:var(--ink-3)">(optional)</span></label>
+                <input id="editNewPassword" name="newPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters" />
+                <p class="err" id="editNewPasswordErr"></p>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-self:flex-start;">
+                <button type="submit" class="btn btn-primary" id="profileEditSubmit" style="min-width:140px;">Save changes</button>
+                <button type="button" class="btn btn-ghost" id="profileEditCancel">Cancel</button>
+              </div>
+            </form>
           </div>
 
           <div class="dlist" id="profileList">
@@ -1993,6 +2038,10 @@ npm run dev
         } else {
           setNav("auth");
         }
+        if (name !== "profile") {
+          const panel = $("profileEditPanel");
+          if (panel) panel.hidden = true;
+        }
         window.scrollTo(0, 0);
       }
 
@@ -2057,24 +2106,35 @@ npm run dev
       function renderAvatar(user) {
         const img = $("pfAvatar");
         const fb = $("pfAvatarFallback");
+        if (!img || !fb) return;
         const name = (user && (user.username || user.email)) || "?";
         fb.textContent = String(name).charAt(0).toUpperCase();
+
         const src = avatarSrc(user);
-        if (!src) {
-          img.hidden = true;
-          fb.hidden = false;
-          return;
-        }
+        // 默认只显示字母回退，图片加载成功后再切换
+        img.hidden = true;
+        fb.hidden = false;
+        img.removeAttribute("src");
+        img.onload = null;
+        img.onerror = null;
+
+        if (!src) return;
+
         img.alt = name + " avatar";
-        img.onerror = () => {
-          img.hidden = true;
-          fb.hidden = false;
-        };
         img.onload = () => {
           img.hidden = false;
           fb.hidden = true;
         };
+        img.onerror = () => {
+          img.hidden = true;
+          fb.hidden = false;
+        };
         img.src = src;
+        // 缓存命中时 complete 可能已为 true，不会再次触发 onload
+        if (img.complete && img.naturalWidth > 0) {
+          img.hidden = false;
+          fb.hidden = true;
+        }
       }
 
       $("refreshAvatarBtn") && $("refreshAvatarBtn").addEventListener("click", async () => {
@@ -2091,6 +2151,100 @@ npm run dev
           } else {
             toast(err.message || "Could not refresh avatar");
           }
+        }
+      });
+
+      /* —— Edit basic account info —— */
+      function openProfileEdit() {
+        const user = store.user || {};
+        $("editEmail").value = user.email || "";
+        $("editUsername").value = user.username || "";
+        $("editCurrentPassword").value = "";
+        $("editNewPassword").value = "";
+        setBanner("profileEditBanner", "");
+        ["editEmail|editEmailErr", "editUsername|editUsernameErr", "editNewPassword|editNewPasswordErr"]
+          .forEach((pair) => {
+            const [i, er] = pair.split("|");
+            setFieldErr(i, er, "");
+          });
+        $("profileEditPanel").hidden = false;
+        $("profileEditPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+        $("editEmail").focus();
+      }
+
+      function closeProfileEdit() {
+        $("profileEditPanel").hidden = true;
+        setBanner("profileEditBanner", "");
+      }
+
+      $("editProfileBtn") && $("editProfileBtn").addEventListener("click", () => {
+        if ($("profileEditPanel").hidden) openProfileEdit();
+        else closeProfileEdit();
+      });
+      $("profileEditCancel") && $("profileEditCancel").addEventListener("click", () => {
+        closeProfileEdit();
+      });
+
+      $("profileEditForm") && $("profileEditForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        setBanner("profileEditBanner", "");
+        ["editEmail|editEmailErr", "editUsername|editUsernameErr", "editNewPassword|editNewPasswordErr"]
+          .forEach((pair) => {
+            const [i, er] = pair.split("|");
+            setFieldErr(i, er, "");
+          });
+
+        const email = $("editEmail").value.trim().toLowerCase();
+        const username = $("editUsername").value.trim();
+        const currentPassword = $("editCurrentPassword").value;
+        const newPassword = $("editNewPassword").value;
+
+        let ok = true;
+        if (!emailRe.test(email)) {
+          setFieldErr("editEmail", "editEmailErr", "Email is invalid");
+          ok = false;
+        }
+        if (!userRe.test(username)) {
+          setFieldErr("editUsername", "editUsernameErr", "3–32 letters, numbers, underscore");
+          ok = false;
+        }
+        if (newPassword && newPassword.length < 8) {
+          setFieldErr("editNewPassword", "editNewPasswordErr", "Password must be at least 8 characters");
+          ok = false;
+        }
+        if (newPassword && !currentPassword) {
+          setBanner("profileEditBanner", "Enter current password to change password");
+          ok = false;
+        }
+        if (!ok) return;
+
+        const payload = { email, username };
+        if (newPassword) {
+          payload.currentPassword = currentPassword;
+          payload.newPassword = newPassword;
+        }
+
+        const btn = $("profileEditSubmit");
+        setLoading(btn, true, "Saving…");
+        try {
+          const data = await api("/auth/me", {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+          });
+          store.user = data.user;
+          fillProfile(data.user);
+          closeProfileEdit();
+          toast("Profile updated");
+        } catch (err) {
+          if (err.status === 401) {
+            setBanner("profileEditBanner", err.message || "Current password is incorrect");
+          } else if (err.status === 409) {
+            setBanner("profileEditBanner", err.message || "Already taken");
+          } else {
+            setBanner("profileEditBanner", err.message || "Update failed");
+          }
+        } finally {
+          setLoading(btn, false, "Save changes");
         }
       });
 

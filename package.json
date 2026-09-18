@@ -1,20 +1,19 @@
 {
   "name": "cloudflare-auth",
-  "version": "1.0.0",
-  "description": "Simple auth service on Cloudflare Workers with D1",
+  "version": "0.3.0",
+  "description": "Auth service on Cloudflare Workers (Rust) with D1",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "build": "worker-build --release",
+    "check": "cargo check --target wasm32-unknown-unknown",
+    "dev": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
     "db:create": "wrangler d1 create cloudflare-auth-db",
     "db:schema:local": "wrangler d1 execute cloudflare-auth-db --local --file=./schema.sql",
-    "db:schema:remote": "wrangler d1 execute cloudflare-auth-db --remote --file=./schema.sql",
-    "typecheck": "tsc --noEmit"
+    "db:schema:remote": "wrangler d1 execute cloudflare-auth-db --remote --file=./schema.sql"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260916.1",
     "playwright": "^1.63.0",
-    "typescript": "^5.8.2",
     "wrangler": "^4.0.0"
   }
 }

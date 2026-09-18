@@ -1,43 +1,33 @@
 name = "cloudflare-auth"
-main = "src/index.ts"
+main = "build/worker/shim.mjs"
 compatibility_date = "2025-03-01"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+preview_urls = false
 
-# 自定义域名（需 dayti.de 在同一 Cloudflare 账号）
 routes = [
   { pattern = "auth.dayti.de", custom_domain = true }
 ]
 
+[build]
+command = "worker-build --release"
+
 [assets]
 directory = "./public"
 binding = "ASSETS"
-# Worker 优先执行，便于把 APP_NAME / SERVICE_URL 注入 HTML
 run_worker_first = true
 
 [vars]
-# —— 密钥（生产请用 secret，勿写进仓库）——
-# JWT_SECRET 通过 `wrangler secret put JWT_SECRET` 设置
-
-# —— 产品与地址 ——
 APP_NAME = "cloudflare-auth"
 SERVICE_URL = "https://auth.dayti.de"
-
-# —— 会话 ——
 TOKEN_TTL_SECONDS = "86400"
-
-# —— 账号策略 ——
 ALLOW_REGISTRATION = "true"
 PASSWORD_MIN_LENGTH = "8"
 USERNAME_MIN = "3"
 USERNAME_MAX = "32"
-
-# —— App 接入 ——
-# true 时 register/login 必须携带 X-App-Id + X-App-Secret
 REQUIRE_APP_CREDENTIALS = "false"
 APP_NAME_MAX = "64"
 APP_DESC_MAX = "256"
-
-# —— 安全（只升不降）——
 PBKDF2_ITERATIONS = "100000"
 
 [[d1_databases]]

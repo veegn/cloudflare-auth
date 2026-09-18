@@ -16,8 +16,16 @@ import {
   revokeApp,
   rotateAppSecret,
   toPublicApp,
+  updateApp,
   type AppError,
 } from "./apps";
+import {
+  completeAuthorize,
+  exchangeAuthCode,
+  inspectAuthorize,
+  isAuthorizeError,
+} from "./authorize";
+import { generateAvatarSeed, renderIdenticonSvg } from "./avatar";
 import { hashPassword, randomId, verifyPassword } from "./password";
 import {
   cleanupExpiredSessions,
@@ -28,7 +36,17 @@ import {
   toPublicUser,
   verifyToken,
 } from "./token";
-import type { AppRow, CreateAppBody, Env, LoginBody, RegisterBody, UserRow } from "./types";
+import type {
+  AppRow,
+  AuthorizeCompleteBody,
+  CreateAppBody,
+  Env,
+  LoginBody,
+  RegisterBody,
+  TokenExchangeBody,
+  UpdateAppBody,
+  UserRow,
+} from "./types";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -76,6 +94,18 @@ async function route(
   if (method === "POST" && path === "/auth/login") return handleLogin(request, env, ctx);
   if (method === "GET" && path === "/auth/me") return handleMe(request, env);
   if (method === "POST" && path === "/auth/logout") return handleLogout(request, env);
+  if (method === "POST" && path === "/auth/avatar/refresh") return handleAvatarRefresh(env, request);
+
+  // —— Avatar (public SVG) ——
+  const avatarMatch = /^\/users\/([^/]+)\/avatar$/.exec(path);
+  if (avatarMatch && method === "GET") {
+    return handleAvatar(request, env, decodeURIComponent(avatarMatch[1]));
+  }
+
+  // —— Redirect login (authorize) ——
+  if (method === "GET" && path === "/authorize") return inspectAuthorize(env, request);
+  if (method === "POST" && path === "/auth/authorize") return handleAuthorizeComplete(request, env);
+  if (method === "POST" && path === "/auth/token") return handleTokenExchange(request, env);
 
   // —— Applications ——
   if (method === "POST" && path === "/apps") return handleCreateApp(request, env);
@@ -85,6 +115,7 @@ async function route(
   if (appRoute) {
     const { id, action } = appRoute;
     if (method === "GET" && !action) return handleGetApp(request, env, id);
+    if (method === "PUT" && !action) return handleUpdateApp(request, env, id);
     if (method === "POST" && action === "rotate-secret") {
       return handleRotateSecret(request, env, id);
     }
@@ -165,11 +196,12 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
 
   const id = randomId();
   const passwordHash = await hashPassword(password, getPbkdf2Iterations(env));
+  const avatarSeed = generateAvatarSeed();
 
   await env.DB.prepare(
-    `INSERT INTO users (id, email, username, password_hash) VALUES (?, ?, ?, ?)`
+    `INSERT INTO users (id, email, username, password_hash, avatar_seed) VALUES (?, ?, ?, ?, ?)`
   )
-    .bind(id, email, username, passwordHash)
+    .bind(id, email, username, passwordHash, avatarSeed)
     .run();
 
   const user = await env.DB.prepare(`SELECT * FROM users WHERE id = ?`)
@@ -274,6 +306,47 @@ function authSessionResponse(
   );
 }
 
+async function handleAvatar(request: Request, env: Env, userId: string): Promise<Response> {
+  const url = new URL(request.url);
+  const querySeed = (url.searchParams.get("v") || "").trim();
+
+  const row = await env.DB.prepare(`SELECT id, avatar_seed FROM users WHERE id = ?`)
+    .bind(userId)
+    .first<{ id: string; avatar_seed: string | null }>();
+  if (!row) {
+    return new Response("Not found", { status: 404, headers: { "content-type": "text/plain" } });
+  }
+
+  const seed = (row.avatar_seed || querySeed || row.id).trim() || row.id;
+  const svg = renderIdenticonSvg(seed);
+  return new Response(svg, {
+    status: 200,
+    headers: {
+      "content-type": "image/svg+xml; charset=utf-8",
+      "cache-control": "public, max-age=604800",
+    },
+  });
+}
+
+async function handleAvatarRefresh(env: Env, request: Request): Promise<Response> {
+  const auth = await requireAuth(request, env);
+  if ("response" in auth) return auth.response;
+
+  const seed = generateAvatarSeed();
+  await env.DB.prepare(`UPDATE users SET avatar_seed = ?, updated_at = datetime('now') WHERE id = ?`)
+    .bind(seed, auth.user.id)
+    .run();
+
+  const user = await env.DB.prepare(`SELECT * FROM users WHERE id = ?`)
+    .bind(auth.user.id)
+    .first<UserRow>();
+  if (!user) {
+    return json({ error: "internal_error", message: "User not found" }, 500);
+  }
+
+  return json({ user: toPublicUser(user) }, 200);
+}
+
 async function handleMe(request: Request, env: Env): Promise<Response> {
   const auth = await requireAuth(request, env);
   if ("response" in auth) return auth.response;
@@ -303,7 +376,8 @@ async function handleCreateApp(request: Request, env: Env): Promise<Response> {
       env,
       auth.user.id,
       body.name ?? "",
-      body.description ?? ""
+      body.description ?? "",
+      body.redirectUris
     );
     return json(
       {
@@ -313,6 +387,61 @@ async function handleCreateApp(request: Request, env: Env): Promise<Response> {
       },
       201
     );
+  } catch (err) {
+    return toErrorResponse(err);
+  }
+}
+
+async function handleUpdateApp(request: Request, env: Env, id: string): Promise<Response> {
+  const auth = await requireAuth(request, env);
+  if ("response" in auth) return auth.response;
+
+  const body = await readJson<UpdateAppBody>(request);
+  if (body instanceof Response) return body;
+
+  try {
+    const app = await updateApp(env, auth.user.id, id, {
+      name: body.name,
+      description: body.description,
+      redirectUris: body.redirectUris,
+    });
+    return json({ app: toPublicApp(app) }, 200);
+  } catch (err) {
+    return toErrorResponse(err);
+  }
+}
+
+async function handleAuthorizeComplete(request: Request, env: Env): Promise<Response> {
+  const auth = await requireAuth(request, env);
+  if ("response" in auth) return auth.response;
+
+  const body = await readJson<AuthorizeCompleteBody>(request);
+  if (body instanceof Response) return body;
+
+  try {
+    const result = await completeAuthorize(env, auth.user, {
+      clientId: body.clientId || body.client_id || "",
+      redirectUri: body.redirectUri || body.redirect_uri || "",
+      state: body.state,
+      responseType: body.responseType || body.response_type,
+    });
+    return json({ redirectTo: result.redirectTo, responseType: result.responseType }, 200);
+  } catch (err) {
+    return toErrorResponse(err);
+  }
+}
+
+async function handleTokenExchange(request: Request, env: Env): Promise<Response> {
+  const body = await readJson<TokenExchangeBody>(request);
+  if (body instanceof Response) return body;
+
+  try {
+    const result = await exchangeAuthCode(env, {
+      code: body.code ?? "",
+      clientId: body.clientId || body.client_id || "",
+      clientSecret: body.clientSecret || body.client_secret || body.appSecret || "",
+    });
+    return json(result, 200);
   } catch (err) {
     return toErrorResponse(err);
   }
@@ -434,7 +563,7 @@ async function readJson<T>(request: Request): Promise<T | Response> {
 }
 
 function toErrorResponse(err: unknown): Response {
-  if (isAppError(err)) {
+  if (isAppError(err) || isAuthorizeError(err)) {
     return json({ error: err.code, message: err.message }, err.status);
   }
   console.error("unhandled error", err);

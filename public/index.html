@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -6,743 +6,1029 @@
   <title>{{APP_NAME}}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --bg: #f5f6f8;
-      --surface: #fafafb;
-      --ink: #0a0a0a;
-      --ink-2: #5c5c5c;
-      --ink-3: #8a8a8a;
-      --line: #e4e4e7;
-      --accent: #0070f3;
-      --accent-hover: #0061d5;
-      --accent-ink: #ffffff;
-      --ok: #12b76a;
-      --danger: #d92d20;
-      --danger-bg: #fef3f2;
-      --field: #ffffff;
-      --field-border: #d4d4d8;
-      --radius: 10px;
-      --sidebar: 248px;
-      --font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    }
+/* Google / Material-inspired design system for cloudflare-auth console */
+:root {
+  --bg: #f0f4f9;
+  --surface: #ffffff;
+  --surface-2: #f8f9fa;
+  --ink: #202124;
+  --ink-2: #5f6368;
+  --ink-3: #80868b;
+  --line: #dadce0;
+  --line-strong: #bdc1c6;
+  --accent: #1a73e8;
+  --accent-hover: #1557b0;
+  --accent-soft: #e8f0fe;
+  --accent-ink: #ffffff;
+  --ok: #1e8e3e;
+  --ok-soft: #e6f4ea;
+  --danger: #d93025;
+  --danger-bg: #fce8e6;
+  --field: #ffffff;
+  --field-border: #dadce0;
+  --radius-sm: 8px;
+  --radius: 10px;
+  --radius-card: 12px;
+  --radius-pill: 20px;
+  --sidebar: 256px;
+  --shadow-1: 0 1px 2px 0 rgba(60, 64, 67, 0.06), 0 1px 3px 1px rgba(60, 64, 67, 0.08);
+  --shadow-2: 0 1px 2px 0 rgba(60, 64, 67, 0.12), 0 2px 6px 2px rgba(60, 64, 67, 0.08);
+  --font: "Google Sans", "Product Sans", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
 
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: var(--font);
-      font-size: 15px;
-      line-height: 1.5;
-      color: var(--ink);
-      background: var(--bg);
-      -webkit-font-smoothing: antialiased;
-    }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
 
-    button, input { font: inherit; color: inherit; }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+button, input { font: inherit; color: inherit; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
-    .app {
-      min-height: 100%;
-      display: grid;
-      grid-template-columns: var(--sidebar) 1fr;
-      background: var(--surface);
-    }
+.app {
+  min-height: 100%;
+  display: grid;
+  grid-template-columns: var(--sidebar) 1fr;
+  background: var(--bg);
+}
 
-    /* 鈥斺€?Sidebar 鈥斺€?*/
-    .sidebar {
-      border-right: 1px solid var(--line);
-      padding: 28px 20px 24px;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      position: sticky;
-      top: 0;
-      align-self: start;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--ink);
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 14px;
-      letter-spacing: -0.01em;
-    }
-    .brand:hover { text-decoration: none; }
-    .brand svg { flex-shrink: 0; }
-    .sidebar-foot { margin-top: auto; padding-top: 24px; }
+/* Sidebar — Google apps rail */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid transparent;
+  padding: 16px 12px 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  z-index: 5;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 16px;
+  letter-spacing: 0;
+  padding: 10px 12px 18px;
+}
+.brand:hover { text-decoration: none; }
+.brand svg { flex-shrink: 0; color: var(--accent); }
+.sidebar-foot { margin-top: auto; padding: 16px 8px 4px; }
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      border-radius: var(--radius);
-      border: 1px solid transparent;
-      padding: 10px 14px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
-      white-space: nowrap;
-    }
-    .btn:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
-    .btn-ghost {
-      background: #fff;
-      border-color: var(--line);
-      color: var(--ink);
-    }
-    .btn-ghost:hover:not(:disabled) { background: #f4f4f5; }
-    .btn-primary {
-      background: var(--accent);
-      color: var(--accent-ink);
-      border-color: var(--accent);
-      padding: 12px 18px;
-      min-width: 180px;
-    }
-    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
-    .btn-block { width: 100%; }
-    .btn-sm { padding: 8px 12px; font-size: 13px; min-width: 0; }
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: var(--radius-pill);
+  color: var(--ink-2);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.nav a:hover { background: var(--surface-2); color: var(--ink); text-decoration: none; }
+.nav a.on {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.nav a[hidden] { display: none; }
+.nav a svg { color: currentColor; }
 
-    /* 鈥斺€?Main 鈥斺€?*/
-    .main {
-      padding: 52px 72px 72px 88px;
-      max-width: calc(720px + 160px);
-    }
-    .main-inner { max-width: 720px; }
-    .auth-wrap { max-width: 400px; padding-top: 10vh; }
-    h1 {
-      margin: 0 0 8px;
-      font-size: 36px;
-      font-weight: 700;
-      letter-spacing: -0.035em;
-      line-height: 1.12;
-    }
-    .lede {
-      margin: 0 0 36px;
-      color: var(--ink-2);
-      font-size: 16px;
-    }
-    h2 {
-      margin: 36px 0 12px;
-      font-size: 19px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
+/* Buttons — Material filled / outlined */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  white-space: nowrap;
+  min-height: 40px;
+}
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-ghost {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--accent);
+  font-weight: 500;
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-1);
+  padding: 11px 24px;
+  min-width: 120px;
+  border-radius: var(--radius-sm);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: var(--shadow-2);
+}
+.btn-block { width: 100%; }
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 13px;
+  min-width: 0;
+  min-height: 34px;
+  border-radius: var(--radius-sm);
+}
 
-    /* Definition list */
-    .dlist { border-top: 1px solid var(--line); margin: 0 0 8px; }
-    .drow {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--line);
-    }
-    .dlabel {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--ink);
-      font-size: 15px;
-    }
-    .dlabel svg { color: var(--ink-3); flex-shrink: 0; }
-    .dvalue {
-      color: var(--ink);
-      font-size: 15px;
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-    .dvalue.mono { font-family: var(--mono); font-size: 13.5px; }
+/* Main content */
+.main {
+  padding: 40px 48px 64px 40px;
+  max-width: 920px;
+}
+.main-inner { max-width: 720px; }
 
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 12px 6px 10px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: #fff;
-      font-size: 13.5px;
-      color: var(--ink);
-    }
-    .pill .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--ok);
-    }
-    .hint {
-      margin: 10px 0 0;
-      color: var(--ink-3);
-      font-size: 13px;
-    }
-    .hint.mono { font-family: var(--mono); font-size: 12.5px; }
+.main.auth-mode {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: none;
+  min-height: 100vh;
+  padding: 32px 48px;
+  background: var(--bg);
+}
 
-    .field-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .field-static {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      min-height: 44px;
-      padding: 10px 14px;
-      border: 1px solid var(--field-border);
-      border-radius: var(--radius);
-      background: var(--field);
-      font-family: var(--mono);
-      font-size: 13.5px;
-      color: var(--ink);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .copied {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--accent);
-      font-size: 13.5px;
-      font-weight: 500;
-      opacity: 0;
-      transition: opacity 0.15s ease;
-      min-width: 72px;
-    }
-    .copied.on { opacity: 1; }
+.auth-wrap {
+  width: 100%;
+  max-width: 450px;
+  padding-top: 0;
+  background: var(--surface);
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
+  padding: 40px 40px 32px;
+}
+.auth-brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.auth-wrap h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.25;
+  color: var(--ink);
+  text-align: center;
+}
+.auth-wrap .lede {
+  margin: 0 0 24px;
+  color: var(--ink-2);
+  font-size: 16px;
+  text-align: center;
+}
+.auth-wrap .form {
+  margin-top: 8px;
+  gap: 16px;
+}
+.auth-wrap .form .field input {
+  height: 48px;
+  border-radius: 4px;
+}
+.auth-wrap .btn-primary {
+  margin-top: 8px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+.auth-wrap .form-foot,
+.auth-wrap .form-foot-docs {
+  text-align: center;
+}
+.auth-wrap .form-foot-docs {
+  margin-top: 20px;
+  padding-top: 20px;
+}
 
-    .actions {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-      margin-top: 14px;
-    }
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+.lede {
+  margin: 0 0 28px;
+  color: var(--ink-2);
+  font-size: 16px;
+}
+h2 {
+  margin: 32px 0 12px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink);
+}
 
-    /* Forms */
-    .form { display: flex; flex-direction: column; gap: 16px; margin-top: 28px; }
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    .field label {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--ink-2);
-    }
-    .field input {
-      height: 44px;
-      padding: 0 14px;
-      border: 1px solid var(--field-border);
-      border-radius: var(--radius);
-      background: var(--field);
-      font-size: 15px;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-    .field input::placeholder { color: #a1a1aa; }
-    .field input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.15);
-    }
-    .field input[aria-invalid="true"] {
-      border-color: var(--danger);
-    }
-    .err {
-      margin: 0;
-      color: var(--danger);
-      font-size: 12.5px;
-      min-height: 0;
-    }
-    .err:empty { display: none; }
-    .banner {
-      display: none;
-      align-items: flex-start;
-      gap: 8px;
-      padding: 12px 14px;
-      border-radius: var(--radius);
-      background: var(--danger-bg);
-      color: var(--danger);
-      font-size: 13.5px;
-      margin-top: 4px;
-    }
-    .banner.on { display: flex; }
-    .form-foot {
-      margin-top: 8px;
-      color: var(--ink-2);
-      font-size: 14px;
-    }
-    .spinner {
-      width: 14px;
-      height: 14px;
-      border: 2px solid rgba(255,255,255,0.35);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+/* Definition list */
+.dlist {
+  border-top: 1px solid var(--line);
+  margin: 0 0 8px;
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.dlist .drow:first-child { border-top: none; }
+.drow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.dlist .drow:last-child { border-bottom: none; }
+.dlabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+.dlabel svg { color: var(--ink-3); flex-shrink: 0; }
+.dvalue {
+  color: var(--ink);
+  font-size: 14px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.dvalue.mono { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
 
-    .toast {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: var(--ink);
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 13.5px;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateY(-6px);
-      transition: opacity 0.2s ease, transform 0.2s ease;
-      z-index: 50;
-    }
-    .toast.on { opacity: 1; transform: translateY(0); }
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 10px;
+  border: none;
+  border-radius: 999px;
+  background: var(--ok-soft);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ok);
+}
+.pill .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
+}
+.hint {
+  margin: 10px 0 0;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+.hint.mono { font-family: var(--mono); font-size: 12px; }
 
-    .view { display: none; }
-    .view.on { display: block; }
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.field-static {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.copied {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ok);
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  min-width: 72px;
+}
+.copied.on { opacity: 1; }
 
-    /* 鈥斺€?Docs 鈥斺€?*/
-    .nav {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-top: 28px;
-    }
-    .nav a {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 8px;
-      color: var(--ink-2);
-      font-size: 14px;
-      font-weight: 500;
-      text-decoration: none;
-    }
-    .nav a[hidden] { display: none; }
-    .nav a:hover { background: #f0f0f2; color: var(--ink); text-decoration: none; }
-    .nav a.on { background: #eceef1; color: var(--ink); }
-    .nav a svg { color: currentColor; opacity: 0.7; }
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
 
-    .docs-home { max-width: 720px; padding-top: 8px; }
-    .docs-lede { margin: 0 0 28px; color: var(--ink-2); font-size: 16px; max-width: 52ch; }
-    .audience {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 8px;
-    }
-    .audience-card {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 22px 22px 20px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #fff;
-      color: inherit;
-      text-decoration: none;
-      transition: border-color 0.15s ease, background 0.15s ease;
-      min-height: 168px;
-    }
-    .audience-card:hover {
-      border-color: #c8c8ce;
-      background: #fcfcfd;
-      text-decoration: none;
-    }
-    .audience-card:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-    .audience-card .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      color: var(--ink-3);
-    }
-    .audience-card h3 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: var(--ink);
-    }
-    .audience-card p {
-      margin: 0;
-      color: var(--ink-2);
-      font-size: 14px;
-      line-height: 1.55;
-      flex: 1;
-    }
-    .audience-card .go {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--accent);
-      font-size: 14px;
-      font-weight: 500;
-    }
+/* Forms — Material outlined fields */
+.form { display: flex; flex-direction: column; gap: 18px; margin-top: 28px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+}
+.field input {
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--field-border);
+  border-radius: 4px;
+  background: var(--field);
+  font-size: 14px;
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field input::placeholder { color: var(--ink-3); }
+.field input:hover { border-color: var(--line-strong); }
+.field input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.field input[aria-invalid="true"] {
+  border-color: var(--danger);
+  box-shadow: none;
+}
+.err {
+  margin: 0;
+  color: var(--danger);
+  font-size: 12px;
+  min-height: 0;
+}
+.err:empty { display: none; }
+.banner {
+  display: none;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 13px;
+  margin-top: 4px;
+}
+.banner.on { display: flex; }
+.form-foot {
+  margin-top: 8px;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+.form-foot-docs {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.form-foot-docs a { color: var(--accent); font-weight: 500; }
+.form-foot-docs a:hover { color: var(--accent-hover); }
 
-    .doc-wrap { max-width: 720px; }
-    .doc-crumb {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 0 0 20px;
-      font-size: 13px;
-      color: var(--ink-3);
-    }
-    .doc-crumb a { color: var(--ink-2); }
-    .doc-crumb a:hover { color: var(--accent); }
-    .doc-section { margin-top: 36px; }
-    .doc-section h2 {
-      margin: 0 0 12px;
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
-    .doc-section h3 {
-      margin: 22px 0 8px;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--ink);
-    }
-    .doc-section p, .doc-section li {
-      color: var(--ink-2);
-      font-size: 14.5px;
-      line-height: 1.65;
-    }
-    .doc-section p { margin: 0 0 12px; }
-    .doc-section ul, .doc-section ol {
-      margin: 0 0 12px;
-      padding-left: 1.25em;
-    }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
-      font-family: var(--mono);
-      font-size: 12.5px;
-      background: #f0f0f2;
-      padding: 1px 6px;
-      border-radius: 4px;
-      color: var(--ink);
-    }
-    .codeblock {
-      margin: 0 0 14px;
-      padding: 14px 16px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #fafafb;
-      font-family: var(--mono);
-      font-size: 12.5px;
-      line-height: 1.55;
-      color: var(--ink);
-      overflow-x: auto;
-      white-space: pre;
-    }
-    .api-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 0 0 16px;
-      font-size: 13.5px;
-    }
-    .api-table th,
-    .api-table td {
-      text-align: left;
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--line);
-      vertical-align: top;
-    }
-    .api-table th {
-      color: var(--ink-3);
-      font-weight: 500;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .api-table td { color: var(--ink-2); }
-    .api-table td.path {
-      font-family: var(--mono);
-      font-size: 12.5px;
-      color: var(--ink);
-      white-space: nowrap;
-    }
-    .method {
-      display: inline-block;
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 500;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: #eceef1;
-      color: var(--ink);
-    }
-    .method.post { background: #e8f1fe; color: #0057c2; }
-    .method.get { background: #e9f8ef; color: #0a7a3e; }
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-    .callout {
-      display: flex;
-      gap: 10px;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #fafafb;
-      margin: 0 0 16px;
-      font-size: 13.5px;
-      color: var(--ink-2);
-      line-height: 1.55;
-    }
-    .callout strong { color: var(--ink); font-weight: 550; }
-    .callout .ico {
-      flex-shrink: 0;
-      width: 18px;
-      height: 18px;
-      margin-top: 1px;
-      color: var(--accent);
-    }
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  background: #323232;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 4px;
+  font-size: 14px;
+  box-shadow: var(--shadow-2);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 50;
+}
+.toast.on { opacity: 1; transform: translateY(0); }
 
-    .form-foot-docs {
-      margin-top: 18px;
-      padding-top: 16px;
-      border-top: 1px solid var(--line);
-      font-size: 13.5px;
-      color: var(--ink-3);
-    }
-    .form-foot-docs a { color: var(--ink-2); font-weight: 500; }
-    .form-foot-docs a:hover { color: var(--accent); }
+.view { display: none; }
+.view.on { display: block; }
+.main.auth-mode .view.auth-wrap.on { display: block; }
 
-    /* 鈥斺€?Applications 鈥斺€?*/
-    .apps-toolbar {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      margin: 0 0 20px;
-    }
-    .secret-banner {
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      padding: 14px 16px;
-      border: 1px solid #b7e0c8;
-      border-radius: 10px;
-      background: #f0faf4;
-      margin: 0 0 24px;
-    }
-    .secret-banner.on { display: flex; }
-    .secret-banner .title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #0a7a3e;
-    }
-    .secret-banner .row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .secret-banner code {
-      flex: 1;
-      font-family: var(--mono);
-      font-size: 12.5px;
-      padding: 10px 12px;
-      border: 1px solid #c5e8d4;
-      border-radius: 8px;
-      background: #fff;
-      color: var(--ink);
-      overflow-x: auto;
-      white-space: nowrap;
-    }
-    .app-list { border-top: 1px solid var(--line); }
-    .app-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 16px;
-      padding: 18px 0;
-      border-bottom: 1px solid var(--line);
-      align-items: start;
-    }
-    .app-row.revoked { opacity: 0.55; }
-    .app-meta h3 {
-      margin: 0 0 4px;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-    }
-    .app-meta p {
-      margin: 0 0 8px;
-      color: var(--ink-2);
-      font-size: 13.5px;
-    }
-    .app-id-line {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--mono);
-      font-size: 12.5px;
-      color: var(--ink-2);
-    }
-    .app-id-line button {
-      border: none;
-      background: transparent;
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      padding: 2px 4px;
-      border-radius: 4px;
-    }
-    .app-id-line button:hover { background: #e8f1fe; }
-    .app-id-line button:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 1px;
-    }
-    .app-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-    .status-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--ink-2);
-      margin-left: 8px;
-    }
-    .status-chip .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--ok);
-    }
-    .status-chip.revoked .dot { background: var(--ink-3); }
-    .empty-apps {
-      padding: 28px 0;
-      color: var(--ink-3);
-      font-size: 14px;
-    }
-    .profile-link-row {
-      margin-top: 28px;
-      padding-top: 20px;
-      border-top: 1px solid var(--line);
-    }
+/* Docs */
+.docs-home { max-width: 720px; padding-top: 8px; }
+.docs-lede { margin: 0 0 28px; color: var(--ink-2); font-size: 16px; max-width: 56ch; }
+.audience {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 8px;
+}
+.audience-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  min-height: 160px;
+}
+.audience-card:hover {
+  border-color: var(--line);
+  box-shadow: var(--shadow-2);
+  text-decoration: none;
+  background: var(--surface);
+}
+.audience-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.audience-card .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.audience-card h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+.audience-card p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.55;
+  flex: 1;
+}
+.audience-card .go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 500;
+}
 
-    /* 鈥斺€?AppID flow diagram 鈥斺€?*/
-    .flow-strip {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin: 0 0 22px;
-    }
-    .flow-step {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 14px 12px;
-      background: #fff;
-      min-height: 110px;
-    }
-    .flow-step .n {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      background: #eceef1;
-      color: var(--ink);
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-    .flow-step h4 {
-      margin: 0 0 6px;
-      font-size: 13.5px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-    }
-    .flow-step p {
-      margin: 0;
-      font-size: 12.5px;
-      line-height: 1.45;
-      color: var(--ink-2);
-    }
-    .role-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      margin: 0 0 20px;
-    }
-    .role-card {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 14px 14px 12px;
-      background: #fafafb;
-    }
-    .role-card h4 {
-      margin: 0 0 8px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .role-card ul {
-      margin: 0;
-      padding-left: 1.1em;
-    }
-    .role-card li {
-      font-size: 12.5px;
-      color: var(--ink-2);
-      line-height: 1.5;
-      margin-bottom: 4px;
-    }
-    @media (max-width: 900px) {
-      .flow-strip { grid-template-columns: 1fr 1fr; }
-      .role-grid { grid-template-columns: 1fr; }
-    }
+.doc-wrap { max-width: 720px; }
+.doc-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.doc-crumb a { color: var(--ink-2); }
+.doc-crumb a:hover { color: var(--accent); }
+.doc-section { margin-top: 32px; }
+.doc-section h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.doc-section h3 {
+  margin: 22px 0 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.doc-section p, .doc-section li {
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.65;
+}
+.doc-section p { margin: 0 0 12px; }
+.doc-section ul, .doc-section ol {
+  margin: 0 0 12px;
+  padding-left: 1.25em;
+}
+.doc-section li { margin-bottom: 6px; }
+.doc-section code {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--ink);
+}
+.codeblock {
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink);
+  overflow-x: auto;
+  white-space: pre;
+}
+.api-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 16px;
+  font-size: 13.5px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.api-table th,
+.api-table td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.api-table tr:last-child td { border-bottom: none; }
+.api-table th {
+  color: var(--ink-3);
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--surface-2);
+}
+.api-table td { color: var(--ink-2); }
+.api-table td.path {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.method {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.method.post { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.method.get { background: var(--ok-soft); border-color: transparent; color: var(--ok); }
 
-    @media (max-width: 720px) {
-      .audience { grid-template-columns: 1fr; }
-      .app-row { grid-template-columns: 1fr; }
-      .app-actions { justify-content: flex-start; }
-    }
-    @media (max-width: 960px) {
-      .app { grid-template-columns: 1fr; }
-      .sidebar {
-        position: relative;
-        min-height: 0;
-        flex-direction: row;
-        align-items: center;
-        padding: 16px 20px;
-        border-right: none;
-        border-bottom: 1px solid var(--line);
-      }
-      .sidebar-foot { margin-top: 0; padding-top: 0; margin-left: auto; }
-      .main { padding: 32px 24px 48px; }
-      .auth-wrap { padding-top: 24px; }
-    }
-    @media (max-width: 480px) {
-      .drow { flex-direction: column; align-items: flex-start; gap: 6px; }
-      .dvalue { text-align: left; }
-      .field-row { flex-direction: column; align-items: stretch; }
-      .copied { min-width: 0; }
-    }
+.callout {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  margin: 0 0 16px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+.callout strong { color: var(--ink); font-weight: 500; }
+.callout .ico {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: var(--accent);
+}
+
+/* Applications */
+.apps-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 20px;
+}
+.secret-banner {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #b7e0c8;
+  border-radius: var(--radius-card);
+  background: var(--ok-soft);
+  margin: 0 0 24px;
+}
+.secret-banner.on { display: flex; }
+.secret-banner .title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ok);
+}
+.secret-banner .row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.secret-banner code {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 10px 12px;
+  border: 1px solid #ceead6;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.app-list {
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.app-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  align-items: start;
+}
+.app-row:last-child { border-bottom: none; }
+.app-row.revoked { opacity: 0.55; }
+.app-meta h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.app-meta p {
+  margin: 0 0 8px;
+  color: var(--ink-2);
+  font-size: 13.5px;
+}
+.app-id-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.app-id-line button {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.app-id-line button:hover { background: var(--accent-soft); }
+.app-id-line button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.app-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  margin-left: 8px;
+}
+.status-chip .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ok);
+}
+.status-chip.revoked .dot { background: var(--ink-3); }
+.empty-apps {
+  padding: 28px 0;
+  color: var(--ink-3);
+  font-size: 14px;
+}
+.profile-link-row {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Authorize / third-party card */
+.authz-banner {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface-2);
+  margin-bottom: 20px;
+  text-align: left;
+}
+.authz-banner.on { display: flex; }
+.authz-banner .eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+.authz-banner .title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0;
+}
+.authz-banner .app-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.authz-banner .desc {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+.authz-banner .desc:empty { display: none; }
+.authz-banner .meta {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.5;
+  word-break: break-all;
+}
+.authz-banner code {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.authz-banner.err {
+  background: var(--danger-bg);
+  border-color: #f5c2c0;
+}
+.authz-banner.err .title { color: var(--danger); }
+.authz-banner.err .eyebrow { color: var(--danger); }
+.authz-banner.err .app-mark {
+  background: var(--danger);
+  color: #fff;
+}
+
+.uris-hint {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin: 4px 0 0;
+}
+
+/* Profile avatar */
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 28px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+  box-shadow: var(--shadow-1);
+  background: #eceef1;
+  object-fit: cover;
+  flex-shrink: 0;
+  display: block;
+}
+.avatar-fallback {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+  box-shadow: var(--shadow-1);
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 26px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.profile-head-text {
+  min-width: 0;
+  flex: 1;
+}
+.profile-head-text h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 400;
+}
+.profile-head-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* AppID flow */
+.flow-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 0 0 22px;
+}
+.flow-step {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 16px 14px;
+  background: var(--surface);
+  min-height: 110px;
+}
+.flow-step .n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.flow-step h4 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.flow-step p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin: 0 0 20px;
+}
+.role-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  background: var(--surface);
+}
+.role-card h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.role-card ul {
+  margin: 0;
+  padding-left: 1.1em;
+}
+.role-card li {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 900px) {
+  .flow-strip { grid-template-columns: 1fr 1fr; }
+  .role-grid { grid-template-columns: 1fr; }
+  .audience { grid-template-columns: 1fr; }
+  .app-row { grid-template-columns: 1fr; }
+  .app-actions { justify-content: flex-start; }
+}
+@media (max-width: 960px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar {
+    position: relative;
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+    padding: 8px 12px;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand { padding: 8px 12px; }
+  .nav { flex-direction: row; margin-top: 0; margin-left: 8px; }
+  .nav a { padding: 8px 14px; }
+  .sidebar-foot { margin-top: 0; padding-top: 0; margin-left: auto; padding-right: 8px; }
+  .main {
+    padding: 28px 20px 48px;
+    max-width: none;
+  }
+  .main.auth-mode {
+    min-height: 0;
+    display: block;
+    padding: 24px 16px 40px;
+    max-width: none;
+  }
+  .auth-wrap {
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 32px 24px 28px;
+  }
+  .profile-head { flex-wrap: wrap; }
+}
+@media (max-width: 480px) {
+  .drow { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .dvalue { text-align: left; }
+  .field-row { flex-direction: column; align-items: stretch; }
+  .copied { min-width: 0; }
+  .auth-wrap { padding: 28px 18px 24px; border-radius: 20px; }
+  .actions { flex-direction: column; align-items: stretch; }
+}
+
   </style>
 </head>
 <body>
@@ -781,8 +1067,22 @@
     <main class="main">
       <!-- Login -->
       <section class="view auth-wrap" id="view-login" aria-labelledby="loginTitle">
-        <h1 id="loginTitle">Welcome back</h1>
-        <p class="lede">Sign in to {{APP_NAME}}</p>
+        <div class="auth-brand" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M7.5 17.5h9.2c2.1 0 3.8-1.6 3.8-3.7 0-1.9-1.4-3.4-3.2-3.7C16.7 7.7 14.7 6 12.2 6c-2.8 0-5 2.1-5.3 4.8-.2 0-.5-.1-.7-.1-1.9 0-3.4 1.5-3.4 3.4s1.5 3.4 3.4 3.4z" stroke="#1a73e8" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h1 id="loginTitle">Sign in</h1>
+        <p class="lede" id="loginLede">Use your {{APP_NAME}} account</p>
+        <div class="authz-banner" id="authzBanner" role="status">
+          <p class="eyebrow" id="authzEyebrow">Third-party application</p>
+          <div class="title">
+            <span class="app-mark" id="authzMark" aria-hidden="true">A</span>
+            <span id="authzTitle">Application</span>
+          </div>
+          <p class="desc" id="authzDesc"></p>
+          <p class="meta" id="authzMeta"></p>
+        </div>
         <form class="form" id="loginForm" novalidate>
           <div class="banner" id="loginBanner" role="alert"></div>
           <div class="field">
@@ -803,8 +1103,22 @@
 
       <!-- Register -->
       <section class="view auth-wrap" id="view-register" aria-labelledby="regTitle">
-        <h1 id="regTitle">Create account</h1>
-        <p class="lede">Start with email and password</p>
+        <div class="auth-brand" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M7.5 17.5h9.2c2.1 0 3.8-1.6 3.8-3.7 0-1.9-1.4-3.4-3.2-3.7C16.7 7.7 14.7 6 12.2 6c-2.8 0-5 2.1-5.3 4.8-.2 0-.5-.1-.7-.1-1.9 0-3.4 1.5-3.4 3.4s1.5 3.4 3.4 3.4z" stroke="#1a73e8" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h1 id="regTitle">Create your account</h1>
+        <p class="lede" id="regLede">Continue to {{APP_NAME}}</p>
+        <div class="authz-banner" id="authzBannerReg" role="status">
+          <p class="eyebrow" id="authzEyebrowReg">Third-party application</p>
+          <div class="title">
+            <span class="app-mark" id="authzMarkReg" aria-hidden="true">A</span>
+            <span id="authzTitleReg">Application</span>
+          </div>
+          <p class="desc" id="authzDescReg"></p>
+          <p class="meta" id="authzMetaReg"></p>
+        </div>
         <form class="form" id="registerForm" novalidate>
           <div class="banner" id="regBanner" role="alert"></div>
           <div class="field">
@@ -836,8 +1150,17 @@
       <!-- Profile -->
       <section class="view" id="view-profile" aria-labelledby="profileTitle">
         <div class="main-inner">
-          <h1 id="profileTitle">Profile</h1>
-          <p class="lede">Your account and session details.</p>
+          <div class="profile-head">
+            <img class="avatar" id="pfAvatar" alt="" width="72" height="72" hidden />
+            <div class="avatar-fallback" id="pfAvatarFallback" aria-hidden="true">?</div>
+            <div class="profile-head-text">
+              <h1 id="profileTitle">Profile</h1>
+              <p class="lede" style="margin:0;">Your account and session details.</p>
+            </div>
+            <div class="profile-head-actions">
+              <button type="button" class="btn btn-ghost btn-sm" id="refreshAvatarBtn" title="Generate a new default avatar">New avatar</button>
+            </div>
+          </div>
 
           <div class="dlist" id="profileList">
             <div class="drow">
@@ -872,7 +1195,7 @@
 
           <h2>Session status</h2>
           <p class="hint" style="margin:0 0 10px;color:var(--ink);font-size:14px;font-weight:500;">Current session</p>
-          <span class="pill"><span class="dot" aria-hidden="true"></span>Active 路 Expires in 24h</span>
+          <span class="pill"><span class="dot" aria-hidden="true"></span>Active · Expires in 24h</span>
           <p class="hint mono" id="pfExpiry">This session will expire at —.</p>
 
           <h2>API Base URL</h2>
@@ -928,9 +1251,14 @@
             </div>
           </div>
 
-          <h2>Register a new app</h2>
-          <form class="form" id="appForm" novalidate style="margin-top:12px;max-width:480px;">
+          <h2 id="appFormTitle">Register a new app</h2>
+          <p class="hint" id="appFormHint" style="margin:0 0 12px;color:var(--ink-2);">Create an App ID, then register redirect URIs for redirect login.</p>
+          <form class="form" id="appForm" novalidate style="margin-top:4px;max-width:480px;">
             <div class="banner" id="appBanner" role="alert"></div>
+            <div class="field" id="appIdReadonly" hidden>
+              <label>App ID</label>
+              <div class="field-static" id="appEditAppId" style="font-family:var(--mono);font-size:13px;">—</div>
+            </div>
             <div class="field">
               <label for="appName">App name</label>
               <input id="appName" name="name" type="text" placeholder="Acme Dashboard" required maxlength="64" />
@@ -940,7 +1268,15 @@
               <label for="appDesc">Description <span style="font-weight:400;color:var(--ink-3)">(optional)</span></label>
               <input id="appDesc" name="description" type="text" placeholder="What this integration is for" maxlength="256" />
             </div>
-            <button type="submit" class="btn btn-primary" id="appSubmit" style="align-self:flex-start;min-width:160px;">Create application</button>
+            <div class="field">
+              <label for="appRedirectUris">Redirect URIs <span style="font-weight:400;color:var(--ink-3)">(optional, one per line)</span></label>
+              <input id="appRedirectUris" name="redirectUris" type="text" placeholder="https://app.example.com/callback" style="font-family:var(--mono);font-size:13px;" />
+              <p class="uris-hint">Required for redirect login. Exact match; max 20 URIs.</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-self:flex-start;">
+              <button type="submit" class="btn btn-primary" id="appSubmit" style="min-width:160px;">Create application</button>
+              <button type="button" class="btn btn-ghost" id="appCancelEdit" hidden>Cancel</button>
+            </div>
           </form>
 
           <h2>Your apps</h2>
@@ -1357,6 +1693,63 @@ export async function getMe(userToken) {
         </div>
 
         <div class="doc-section">
+          <h2>Redirect login (take over sign-in)</h2>
+          <p>Use redirect mode when your product wants auth.dayti.de to host login, then bounce the user back to your app. Register <strong>Redirect URIs</strong> on the Applications page first (exact match, one per line).</p>
+
+          <h3>Flow</h3>
+          <ol>
+            <li>Your app redirects the browser to <code>{{SERVICE_URL}}/?client_id=…&amp;redirect_uri=…&amp;state=…&amp;response_type=code</code></li>
+            <li>User signs in (or creates an account) on this console</li>
+            <li>Console calls <code>POST /auth/authorize</code> and navigates to your <code>redirect_uri</code></li>
+            <li>Your backend exchanges the one-time code with App Secret via <code>POST /auth/token</code></li>
+          </ol>
+
+          <h3>1) Start authorize from your app</h3>
+          <div class="codeblock">const url = new URL("https://auth.dayti.de/");
+url.searchParams.set("client_id", "app_xxx");
+url.searchParams.set("redirect_uri", "https://app.example.com/callback");
+url.searchParams.set("response_type", "code"); // or "token"
+url.searchParams.set("state", crypto.randomUUID());
+window.location.assign(url.toString());</div>
+          <p><code>redirect_uri</code> must match a URI registered on the application, or authorize fails.</p>
+
+          <h3>2) After redirect back (code mode)</h3>
+          <div class="codeblock">// callback: ?code=ac_…&state=…
+curl -X POST $BASE/auth/token \
+  -H "content-type: application/json" \
+  -d '{
+    "code": "ac_…",
+    "client_id": "app_xxx",
+    "client_secret": "sec_…"
+  }'
+
+# → { user, token, expiresIn, appId }</div>
+          <p>Codes expire in <strong>5 minutes</strong> and are single-use. Keep <code>state</code> and verify it on return.</p>
+
+          <h3>3) Token mode (implicit, fragment)</h3>
+          <div class="codeblock">response_type=token
+# redirect_uri#access_token=…&token_type=Bearer&expires_in=86400&state=…</div>
+          <div class="callout">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <div><strong>Prefer code mode</strong> for server-side apps. Token mode puts a JWT in the URL fragment — only use it if you accept that risk (e.g. pure SPA with no backend).</div>
+          </div>
+
+          <h3>API summary</h3>
+          <table class="api-table">
+            <thead>
+              <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="method get">GET</span></td><td class="path">/authorize</td><td>Validate client_id + redirect_uri (JSON)</td></tr>
+              <tr><td><span class="method post">POST</span></td><td class="path">/auth/authorize</td><td>Complete login; returns <code>redirectTo</code> (Bearer user token)</td></tr>
+              <tr><td><span class="method post">POST</span></td><td class="path">/auth/token</td><td>Exchange code + client_secret for JWT</td></tr>
+              <tr><td><span class="method post">POST</span></td><td class="path">/apps</td><td>Create app with <code>redirectUris: string[]</code></td></tr>
+              <tr><td><span class="method post">PUT</span></td><td class="path">/apps/:id</td><td>Update redirect URIs / name / description</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="doc-section">
           <h2>Error codes</h2>
           <table class="api-table">
             <thead>
@@ -1589,6 +1982,10 @@ npm run dev
         const signedIn = !!(store.token && store.user);
         setAuthChrome(signedIn);
         sidebarFoot.hidden = name !== "profile" && name !== "apps";
+        const mainEl = document.querySelector(".main");
+        if (mainEl) {
+          mainEl.classList.toggle("auth-mode", name === "login" || name === "register");
+        }
         if (name === "docs" || name === "docs-dev" || name === "docs-user") {
           setNav("docs");
         } else if (name === "apps") {
@@ -1636,15 +2033,66 @@ npm run dev
         $("pfUsername").textContent = user.username;
         $("pfCreated").textContent = user.createdAt || user.created_at || "—";
         $("pfId").textContent = user.id;
+        renderAvatar(user);
         const hours = Math.round((sessionExpiresIn || 86400) / 3600);
         const label = hours >= 24 ? Math.round(hours / 24) + "d" : hours + "h";
         const pill = document.querySelector("#view-profile .pill");
-        if (pill) pill.innerHTML = '<span class="dot" aria-hidden="true"></span>Active 路 Expires in ' + label;
+        if (pill) pill.innerHTML = '<span class="dot" aria-hidden="true"></span>Active · Expires in ' + label;
         const exp = new Date(Date.now() + (sessionExpiresIn || 86400) * 1000);
         $("pfExpiry").textContent = "This session will expire at " + exp.toISOString().replace(/\.\d{3}Z$/, "Z") + ".";
         const origin = location.origin;
         $("apiBase").textContent = origin;
       }
+
+      function avatarSrc(user) {
+        if (!user) return "";
+        if (user.avatarUrl) {
+          return user.avatarUrl.startsWith("http")
+            ? user.avatarUrl
+            : location.origin + user.avatarUrl;
+        }
+        return location.origin + "/users/" + encodeURIComponent(user.id) + "/avatar";
+      }
+
+      function renderAvatar(user) {
+        const img = $("pfAvatar");
+        const fb = $("pfAvatarFallback");
+        const name = (user && (user.username || user.email)) || "?";
+        fb.textContent = String(name).charAt(0).toUpperCase();
+        const src = avatarSrc(user);
+        if (!src) {
+          img.hidden = true;
+          fb.hidden = false;
+          return;
+        }
+        img.alt = name + " avatar";
+        img.onerror = () => {
+          img.hidden = true;
+          fb.hidden = false;
+        };
+        img.onload = () => {
+          img.hidden = false;
+          fb.hidden = true;
+        };
+        img.src = src;
+      }
+
+      $("refreshAvatarBtn") && $("refreshAvatarBtn").addEventListener("click", async () => {
+        try {
+          const data = await api("/auth/avatar/refresh", { method: "POST" });
+          store.user = data.user;
+          renderAvatar(data.user);
+          toast("New avatar generated");
+        } catch (err) {
+          if (err.status === 401) {
+            clearSession();
+            show("login");
+            toast("Session expired — sign in again");
+          } else {
+            toast(err.message || "Could not refresh avatar");
+          }
+        }
+      });
 
       function goProfile(user) {
         fillProfile(user);
@@ -1694,6 +2142,200 @@ npm run dev
         $("secretBanner").classList.remove("on");
       }
 
+      /* —— Redirect login (authorize) context —— */
+      const authz = {
+        clientId: "",
+        redirectUri: "",
+        state: "",
+        responseType: "code",
+        appName: "",
+        appDescription: "",
+        error: "",
+      };
+
+      function parseAuthorizeQuery() {
+        const q = new URLSearchParams(location.search);
+        authz.clientId = (q.get("client_id") || q.get("app_id") || "").trim();
+        authz.redirectUri = (q.get("redirect_uri") || "").trim();
+        authz.state = q.get("state") || "";
+        authz.responseType = (q.get("response_type") || "code").toLowerCase();
+        authz.appName = "";
+        authz.appDescription = "";
+        authz.error = "";
+      }
+
+      function hasAuthzContext() {
+        return !!(authz.clientId && authz.redirectUri);
+      }
+
+      function fillAuthzCard(ids, opts) {
+        const box = $(ids.box);
+        if (!box) return;
+        const eyebrow = $(ids.eyebrow);
+        const mark = $(ids.mark);
+        const title = $(ids.title);
+        const desc = $(ids.desc);
+        const meta = $(ids.meta);
+
+        if (opts.error) {
+          box.classList.add("on", "err");
+          if (eyebrow) eyebrow.textContent = "Authorization error";
+          if (mark) mark.textContent = "!";
+          if (title) title.textContent = "Sign-in unavailable";
+          if (desc) desc.textContent = "";
+          if (meta) meta.textContent = opts.error;
+          return;
+        }
+
+        box.classList.add("on");
+        box.classList.remove("err");
+        const name = opts.name || "Application";
+        if (eyebrow) eyebrow.textContent = "Requesting sign-in";
+        if (mark) mark.textContent = String(name).charAt(0).toUpperCase() || "A";
+        if (title) title.textContent = name;
+        if (desc) {
+          desc.textContent = opts.description || "";
+          desc.hidden = !opts.description;
+        }
+        if (meta) {
+          meta.innerHTML = opts.redirectUri
+            ? "After sign-in, return to <code>" + escapeHtml(opts.redirectUri) + "</code>"
+            : "";
+        }
+      }
+
+      const brandEl = document.querySelector(".brand span");
+      const UI_APP_NAME = (brandEl && brandEl.textContent.trim()) || "cloudflare-auth";
+
+      function showAuthzBanners() {
+        const shared = hasAuthzContext()
+          ? {
+              name: authz.appName,
+              description: authz.appDescription,
+              redirectUri: authz.redirectUri,
+              error: authz.error || "",
+            }
+          : null;
+
+        const loginLede = $("loginLede");
+        const regLede = $("regLede");
+
+        if (!shared) {
+          ["authzBanner", "authzBannerReg"].forEach((id) => {
+            const box = $(id);
+            if (box) box.classList.remove("on", "err");
+          });
+          if (loginLede) loginLede.textContent = "Use your " + UI_APP_NAME + " account";
+          if (regLede) regLede.textContent = "Continue to " + UI_APP_NAME;
+          return;
+        }
+
+        fillAuthzCard(
+          {
+            box: "authzBanner",
+            eyebrow: "authzEyebrow",
+            mark: "authzMark",
+            title: "authzTitle",
+            desc: "authzDesc",
+            meta: "authzMeta",
+          },
+          shared
+        );
+        fillAuthzCard(
+          {
+            box: "authzBannerReg",
+            eyebrow: "authzEyebrowReg",
+            mark: "authzMarkReg",
+            title: "authzTitleReg",
+            desc: "authzDescReg",
+            meta: "authzMetaReg",
+          },
+          shared
+        );
+
+        if (!shared.error && authz.appName) {
+          if (loginLede) loginLede.textContent = "Sign in to continue to " + authz.appName;
+          if (regLede) regLede.textContent = "Create an account for " + authz.appName;
+        } else {
+          if (loginLede) loginLede.textContent = "Use your " + UI_APP_NAME + " account";
+          if (regLede) regLede.textContent = "Continue to " + UI_APP_NAME;
+        }
+      }
+
+      async function loadAuthorizeContext() {
+        parseAuthorizeQuery();
+        if (!hasAuthzContext()) {
+          showAuthzBanners();
+          return false;
+        }
+        try {
+          const data = await api(
+            "/authorize?" +
+              new URLSearchParams({
+                client_id: authz.clientId,
+                redirect_uri: authz.redirectUri,
+                state: authz.state,
+                response_type: authz.responseType,
+              }).toString()
+          );
+          if (!data.ok) {
+            authz.error = data.message || "Invalid authorize request";
+            authz.appName = "";
+            authz.appDescription = "";
+            showAuthzBanners();
+            return false;
+          }
+          authz.appName = (data.app && data.app.name) || "";
+          authz.appDescription = (data.app && data.app.description) || "";
+          authz.error = "";
+          showAuthzBanners();
+          return true;
+        } catch (err) {
+          authz.error = err.message || "Invalid authorize request";
+          authz.appName = "";
+          authz.appDescription = "";
+          showAuthzBanners();
+          return false;
+        }
+      }
+
+      async function tryCompleteAuthorize() {
+        if (!hasAuthzContext() || authz.error) return false;
+        try {
+          const data = await api("/auth/authorize", {
+            method: "POST",
+            body: JSON.stringify({
+              client_id: authz.clientId,
+              redirect_uri: authz.redirectUri,
+              state: authz.state,
+              response_type: authz.responseType,
+            }),
+          });
+          if (data && data.redirectTo) {
+            toast(
+              authz.appName
+                ? "Redirecting to " + authz.appName + "..."
+                : "Redirecting..."
+            );
+            setTimeout(() => {
+              window.location.assign(data.redirectTo);
+            }, 300);
+            return true;
+          }
+        } catch (err) {
+          setBanner("loginBanner", err.message || "Authorization failed");
+          setBanner("regBanner", err.message || "Authorization failed");
+        }
+        return false;
+      }
+
+      function parseRedirectUrisInput(raw) {
+        return String(raw || "")
+          .split(/[\n,]+/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+
       function renderApps() {
         const list = $("appList");
         const empty = $("appsEmpty");
@@ -1701,6 +2343,12 @@ npm run dev
         list.innerHTML = "";
         empty.hidden = items.length > 0;
         items.forEach((app) => {
+          const uris = Array.isArray(app.redirectUris) ? app.redirectUris : [];
+          const uriHtml = uris.length
+            ? '<div class="app-id-line" style="margin-top:6px;"><span title="Redirect URIs">' +
+              escapeHtml(uris.join(" · ")) +
+              "</span></div>"
+            : "";
           const row = document.createElement("div");
           row.className = "app-row" + (app.status === "revoked" ? " revoked" : "");
           row.innerHTML = `
@@ -1715,8 +2363,10 @@ npm run dev
                 <span title="App ID">${escapeHtml(app.appId)}</span>
                 <button type="button" data-copy-app="${escapeHtml(app.appId)}">Copy</button>
               </div>
+              ${uriHtml}
             </div>
             <div class="app-actions">
+              <button type="button" class="btn btn-ghost btn-sm" data-edit="${escapeHtml(app.id)}">Edit</button>
               <button type="button" class="btn btn-ghost btn-sm" data-rotate="${escapeHtml(app.id)}" ${app.status !== "active" ? "disabled" : ""}>Rotate secret</button>
               <button type="button" class="btn btn-ghost btn-sm" data-revoke="${escapeHtml(app.id)}" ${app.status !== "active" ? "disabled" : ""}>Revoke</button>
             </div>
@@ -1741,6 +2391,7 @@ npm run dev
 
       async function openApps() {
         hideSecretBanner();
+        resetAppFormMode();
         show("apps");
         try {
           await loadApps();
@@ -1755,6 +2406,51 @@ npm run dev
         }
       }
 
+      /* —— App create / edit form mode —— */
+      let editingAppId = null;
+
+      function resetAppFormMode() {
+        editingAppId = null;
+        $("appFormTitle").textContent = "Register a new app";
+        $("appFormHint").textContent =
+          "Create an App ID, then register redirect URIs for redirect login.";
+        $("appSubmit").textContent = "Create application";
+        $("appCancelEdit").hidden = true;
+        $("appIdReadonly").hidden = true;
+        $("appEditAppId").textContent = "—";
+        setBanner("appBanner", "");
+        setFieldErr("appName", "appNameErr", "");
+      }
+
+      function startEditApp(id) {
+        const app = appItems.find((x) => x.id === id);
+        if (!app) {
+          toast("App not found");
+          return;
+        }
+        editingAppId = id;
+        $("appFormTitle").textContent = "Edit application";
+        $("appFormHint").textContent =
+          "Update name, description, or redirect URIs. App Secret is not shown here.";
+        $("appSubmit").textContent = "Save changes";
+        $("appCancelEdit").hidden = false;
+        $("appIdReadonly").hidden = false;
+        $("appEditAppId").textContent = app.appId;
+        $("appName").value = app.name || "";
+        $("appDesc").value = app.description || "";
+        $("appRedirectUris").value = (app.redirectUris || []).join("\n");
+        setBanner("appBanner", "");
+        setFieldErr("appName", "appNameErr", "");
+        $("appForm").scrollIntoView({ behavior: "smooth", block: "start" });
+        $("appName").focus();
+      }
+
+      $("appCancelEdit").addEventListener("click", () => {
+        $("appForm").reset();
+        resetAppFormMode();
+        toast("Edit cancelled");
+      });
+
       $("appForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         setBanner("appBanner", "");
@@ -1764,14 +2460,33 @@ npm run dev
           setFieldErr("appName", "appNameErr", "App name is required");
           return;
         }
+        const payload = {
+          name,
+          description: $("appDesc").value.trim(),
+          redirectUris: parseRedirectUrisInput($("appRedirectUris").value),
+        };
         const btn = $("appSubmit");
-        setLoading(btn, true, "Creating…");
+        const isEdit = !!editingAppId;
+        setLoading(btn, true, isEdit ? "Saving…" : "Creating…");
         try {
+          if (isEdit) {
+            const data = await api("/apps/" + encodeURIComponent(editingAppId), {
+              method: "PUT",
+              body: JSON.stringify(payload),
+            });
+            await loadApps();
+            $("appForm").reset();
+            resetAppFormMode();
+            toast("Application updated");
+            return;
+          }
+
           const data = await api("/apps", {
             method: "POST",
-            body: JSON.stringify({ name, description: $("appDesc").value.trim() }),
+            body: JSON.stringify(payload),
           });
           $("appForm").reset();
+          resetAppFormMode();
           await loadApps();
           showSecretOnce(
             "Application created",
@@ -1785,10 +2500,10 @@ npm run dev
             show("login");
             toast("Session expired — sign in again");
           } else {
-            setBanner("appBanner", err.message || "Create failed");
+            setBanner("appBanner", err.message || (isEdit ? "Update failed" : "Create failed"));
           }
         } finally {
-          setLoading(btn, false, "Create application");
+          setLoading(btn, false, isEdit ? "Save changes" : "Create application");
         }
       });
 
@@ -1798,6 +2513,11 @@ npm run dev
         const copyAppId = t.getAttribute("data-copy-app");
         if (copyAppId) {
           if (await copyText(copyAppId)) toast("App ID copied");
+          return;
+        }
+        const editId = t.getAttribute("data-edit");
+        if (editId) {
+          startEditApp(editId);
           return;
         }
         const rotateId = t.getAttribute("data-rotate");
@@ -1828,6 +2548,10 @@ npm run dev
           try {
             await api("/apps/" + encodeURIComponent(revokeId) + "/revoke", { method: "POST" });
             hideSecretBanner();
+            if (editingAppId === revokeId) {
+              $("appForm").reset();
+              resetAppFormMode();
+            }
             await loadApps();
             toast("Application revoked");
           } catch (err) {
@@ -1889,6 +2613,13 @@ npm run dev
           sessionExpiresIn = res.expiresIn || 86400;
           store.token = res.token;
           store.user = res.user;
+          if (hasAuthzContext()) {
+            const redirected = await tryCompleteAuthorize();
+            if (redirected) {
+              setLoading(btn, false, "Sign in");
+              return;
+            }
+          }
           goProfile(res.user);
         } catch (err) {
           setBanner("loginBanner", err.message || "Sign in failed");
@@ -1929,6 +2660,13 @@ npm run dev
           sessionExpiresIn = res.expiresIn || 86400;
           store.token = res.token;
           store.user = res.user;
+          if (hasAuthzContext()) {
+            const redirected = await tryCompleteAuthorize();
+            if (redirected) {
+              setLoading(btn, false, "Create account");
+              return;
+            }
+          }
           goProfile(res.user);
         } catch (err) {
           setBanner("regBanner", err.message || "Registration failed");
@@ -2037,17 +2775,24 @@ npm run dev
       /* Boot: restore session via /auth/me */
       async function boot() {
         $("apiBase").textContent = location.origin;
+        await loadAuthorizeContext();
         if (!store.token) {
           show("login");
+          showAuthzBanners();
           return;
         }
         try {
           const data = await api("/auth/me");
           store.user = data.user;
+          if (hasAuthzContext()) {
+            const redirected = await tryCompleteAuthorize();
+            if (redirected) return;
+          }
           goProfile(data.user);
         } catch {
           clearSession();
           show("login");
+          showAuthzBanners();
         }
       }
       boot();

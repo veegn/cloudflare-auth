@@ -4,12 +4,15 @@ import type { Env, PublicUser, SessionRow, UserRow } from "./types";
 
 const encoder = new TextEncoder();
 
-export function toPublicUser(row: UserRow): PublicUser {
+export function toPublicUser(row: UserRow, avatarSeedFallback = ""): PublicUser {
+  const seed = (row.avatar_seed || avatarSeedFallback || row.id).trim();
   return {
     id: row.id,
     email: row.email,
     username: row.username,
     createdAt: row.created_at,
+    avatarSeed: seed,
+    avatarUrl: `/users/${row.id}/avatar?v=${encodeURIComponent(seed)}`,
   };
 }
 

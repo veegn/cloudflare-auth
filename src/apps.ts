@@ -17,10 +17,40 @@ export function toPublicApp(row: AppRow): PublicApp {
     name: row.name,
     description: row.description,
     status: row.status,
+    redirectUris: parseRedirectUris(row.redirect_uris),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     secretRotatedAt: row.secret_rotated_at,
   };
+}
+
+export function parseRedirectUris(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((x) => (typeof x === "string" ? x.trim() : ""))
+      .filter((x) => x.length > 0)
+      .slice(0, 20);
+  } catch {
+    return [];
+  }
+}
+
+function serializeRedirectUris(list: string[] | undefined): string[] {
+  if (!list || !Array.isArray(list)) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const item of list) {
+    const uri = (item ?? "").trim();
+    if (!uri || uri.length > 2048) continue;
+    if (seen.has(uri)) continue;
+    seen.add(uri);
+    out.push(uri);
+    if (out.length >= 20) break;
+  }
+  return out;
 }
 
 export function validateAppId(appId: string): boolean {
@@ -51,12 +81,14 @@ export async function createApp(
   env: Env,
   ownerId: string,
   name: string,
-  description: string
+  description: string,
+  redirectUris?: string[]
 ): Promise<{ app: AppRow; appSecret: string }> {
   const trimmedName = (name ?? "").trim();
   const trimmedDesc = (description ?? "").trim();
   const nameMax = getAppNameMax(env);
   const descMax = getAppDescMax(env);
+  const uris = serializeRedirectUris(redirectUris);
 
   if (!trimmedName || trimmedName.length > nameMax) {
     throw appError(400, "invalid_name", `Name is required (max ${nameMax} chars)`);
@@ -70,13 +102,63 @@ export async function createApp(
   const { secret, hash } = await issueAppSecret(env);
 
   await env.DB.prepare(
-    `INSERT INTO apps (id, app_id, app_secret_hash, name, description, owner_id, status)
-     VALUES (?, ?, ?, ?, ?, ?, 'active')`
+    `INSERT INTO apps (id, app_id, app_secret_hash, name, description, owner_id, status, redirect_uris)
+     VALUES (?, ?, ?, ?, ?, ?, 'active', ?)`
   )
-    .bind(id, appId, hash, trimmedName, trimmedDesc, ownerId)
+    .bind(id, appId, hash, trimmedName, trimmedDesc, ownerId, JSON.stringify(uris))
     .run();
 
   return { app: await loadAppById(env, id), appSecret: secret };
+}
+
+export async function updateApp(
+  env: Env,
+  ownerId: string,
+  id: string,
+  patch: { name?: string; description?: string; redirectUris?: string[] }
+): Promise<AppRow> {
+  const app = await getOwnedApp(env, ownerId, id);
+  if (!app) {
+    throw appError(404, "not_found", "App not found");
+  }
+
+  let name = app.name;
+  let description = app.description;
+  let redirectJson = app.redirect_uris;
+
+  if (patch.name !== undefined) {
+    name = patch.name.trim();
+    const nameMax = getAppNameMax(env);
+    if (!name || name.length > nameMax) {
+      throw appError(400, "invalid_name", `Name is required (max ${nameMax} chars)`);
+    }
+  }
+  if (patch.description !== undefined) {
+    description = patch.description.trim();
+    const descMax = getAppDescMax(env);
+    if (description.length > descMax) {
+      throw appError(400, "invalid_description", `Description max ${descMax} chars`);
+    }
+  }
+  if (patch.redirectUris !== undefined) {
+    redirectJson = JSON.stringify(serializeRedirectUris(patch.redirectUris));
+  }
+
+  const now = new Date().toISOString();
+  await env.DB.prepare(
+    `UPDATE apps SET name = ?, description = ?, redirect_uris = ?, updated_at = ? WHERE id = ?`
+  )
+    .bind(name, description, redirectJson, now, id)
+    .run();
+
+  return loadAppById(env, id);
+}
+
+export async function findAppByAppId(env: Env, appId: string): Promise<AppRow | null> {
+  const row = await env.DB.prepare(`SELECT * FROM apps WHERE app_id = ?`)
+    .bind(appId)
+    .first<AppRow>();
+  return row ?? null;
 }
 
 export async function listApps(env: Env, ownerId: string): Promise<AppRow[]> {

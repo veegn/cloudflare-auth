@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT NOT NULL UNIQUE,
   username TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
+  avatar_seed TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS apps (
   description TEXT NOT NULL DEFAULT '',
   owner_id TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'active',
+  redirect_uris TEXT NOT NULL DEFAULT '[]',
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now')),
   secret_rotated_at TEXT,
@@ -45,3 +47,17 @@ CREATE TABLE IF NOT EXISTS apps (
 CREATE INDEX IF NOT EXISTS idx_apps_owner ON apps(owner_id);
 CREATE INDEX IF NOT EXISTS idx_apps_app_id ON apps(app_id);
 CREATE INDEX IF NOT EXISTS idx_apps_status ON apps(status);
+
+-- 授权码（重定向登录一次性 code）
+CREATE TABLE IF NOT EXISTS auth_codes (
+  code TEXT PRIMARY KEY,
+  app_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  redirect_uri TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  used INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_codes_app ON auth_codes(app_id);
+CREATE INDEX IF NOT EXISTS idx_auth_codes_expires ON auth_codes(expires_at);

@@ -11,8 +11,10 @@
 
 - `POST /auth/register` — 注册（email / username / password）；可选 `X-App-Id` / `X-App-Secret`
 - `POST /auth/login` — 登录，返回 JWT；可选 `X-App-Id` / `X-App-Secret`
-- `GET /auth/me` — 查询当前用户（需 Bearer token）
+- `GET /auth/me` — 查询当前用户（需 Bearer token；含 `avatarUrl`）
 - `POST /auth/logout` — 注销当前会话
+- `POST /auth/avatar/refresh` — 换一枚随机默认头像
+- `GET /users/:id/avatar` — 用户头像 SVG（identicon，公开）
 - `GET /health` — 健康检查 + 当前生效配置快照
 - `POST /apps` — 申请应用（返回 App ID + 一次性 App Secret）
 - `GET /apps` — 列出我的应用
@@ -166,7 +168,57 @@ curl -X POST https://auth.dayti.de/apps/<internal-id>/revoke \
 - **Secret 只放服务端**，不要写进前端/移动端包。
 - 一个产品一个 App ID；多环境请分别申请。
 - 不带 `X-App-*` 时仍可直接调用（第一方场景）；若设 `REQUIRE_APP_CREDENTIALS=true` 则强制携带。
-- 管理页 Docs → For developers → **App ID integration guide** 含完整分步与排错表。
+- 管理页 Docs → For developers 含 AppID 接入与 **Redirect login** 完整说明。
+
+## 重定向登录（接管登录）
+
+业务方把用户跳到 auth 登录，登录成功后再跳回自己的回调地址。
+
+### 1. 应用配置 Redirect URI
+
+创建/编辑应用时填写 `redirectUris`（精确匹配，最多 20 条）：
+
+```bash
+curl -X POST https://auth.dayti.de/apps \
+  -H "content-type: application/json" \
+  -H "Authorization: Bearer <dev_token>" \
+  -d '{"name":"Acme","redirectUris":["https://app.example.com/callback"]}'
+```
+
+### 2. 业务方发起跳转
+
+```
+https://auth.dayti.de/?client_id=app_xxx
+  &redirect_uri=https%3A%2F%2Fapp.example.com%2Fcallback
+  &response_type=code
+  &state=<random>
+```
+
+用户在 auth 页登录/注册后，浏览器跳到：
+
+```
+https://app.example.com/callback?code=ac_…&state=<random>
+```
+
+### 3. 后端用 code 换 token
+
+```bash
+curl -X POST https://auth.dayti.de/auth/token \
+  -H "content-type: application/json" \
+  -d '{"code":"ac_…","client_id":"app_xxx","client_secret":"sec_…"}'
+# → { user, token, expiresIn, appId }
+```
+
+授权码 **5 分钟有效、仅可使用一次**。`response_type=token` 时 JWT 放在 URL fragment，适合无后端 SPA，服务端场景请优先用 code 模式。
+
+### 相关 API
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/authorize` | 校验 client_id / redirect_uri |
+| POST | `/auth/authorize` | 登录后完成授权，返回 `redirectTo` |
+| POST | `/auth/token` | code + client_secret → 用户 JWT |
+| PUT | `/apps/:id` | 更新 redirectUris / 名称等 |
 
 ## 安全说明
 

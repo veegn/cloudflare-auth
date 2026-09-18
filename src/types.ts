@@ -31,6 +31,8 @@ export interface UserRow {
   email: string;
   username: string;
   password_hash: string;
+  /** 头像随机种子；空则按用户 id 推导 */
+  avatar_seed: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -40,6 +42,9 @@ export interface PublicUser {
   email: string;
   username: string;
   createdAt: string;
+  /** 头像接口路径，客户端拼 origin */
+  avatarUrl: string;
+  avatarSeed: string;
 }
 
 export interface SessionRow {
@@ -59,6 +64,8 @@ export interface AppRow {
   description: string;
   owner_id: string;
   status: "active" | "revoked";
+  /** JSON 字符串，如 ["https://app.example.com/callback"] */
+  redirect_uris: string;
   created_at: string;
   updated_at: string;
   secret_rotated_at: string | null;
@@ -70,9 +77,20 @@ export interface PublicApp {
   name: string;
   description: string;
   status: "active" | "revoked";
+  redirectUris: string[];
   createdAt: string;
   updatedAt: string;
   secretRotatedAt: string | null;
+}
+
+export interface AuthCodeRow {
+  code: string;
+  app_id: string;
+  user_id: string;
+  redirect_uri: string;
+  expires_at: string;
+  used: number;
+  created_at: string;
 }
 
 export interface RegisterBody {
@@ -89,4 +107,31 @@ export interface LoginBody {
 export interface CreateAppBody {
   name: string;
   description?: string;
+  redirectUris?: string[];
+}
+
+export interface UpdateAppBody {
+  redirectUris?: string[];
+  name?: string;
+  description?: string;
+}
+
+export interface AuthorizeCompleteBody {
+  clientId?: string;
+  client_id?: string;
+  redirectUri?: string;
+  redirect_uri?: string;
+  state?: string;
+  responseType?: string;
+  response_type?: string;
+}
+
+export interface TokenExchangeBody {
+  code?: string;
+  clientId?: string;
+  client_id?: string;
+  clientSecret?: string;
+  client_secret?: string;
+  appSecret?: string;
+  grant_type?: string;
 }

@@ -23,8 +23,6 @@ cloudflare-auth/
 │   ├── avatar.rs        # identicon
 │   └── util.rs          # D1 / 校验辅助
 ├── public/              # 管理台静态页
-├── design/              # 设计文档与 QA 截图
-├── prototype/           # 交互稿（mock，离线可点）
 ├── schema.sql           # D1 表结构
 ├── Cargo.toml           # Rust crate
 ├── wrangler.toml        # Worker / D1 / vars / 自定义域
@@ -74,6 +72,8 @@ npm run db:schema:remote
 | POST | `/auth/register` | 注册（可选 X-App-Id/Secret） |
 | POST | `/auth/login` | 登录 → JWT |
 | GET/PATCH | `/auth/me` | 查询 / 修改账户 |
+| GET | `/userinfo` | 第三方用户信息：id / email / 头像 URL |
+| GET | `/v1/users/:id` | 按 userId 查询（需 App 凭证） |
 | POST | `/auth/logout` | 注销会话 |
 | POST | `/apps` / PUT `/apps/:id` | AppID 申请 / 修改 |
 | POST | `/apps/:id/rotate-secret` \| `/revoke` | 轮换 / 吊销 |

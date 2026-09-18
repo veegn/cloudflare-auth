@@ -1785,6 +1785,8 @@ curl -X POST $BASE/auth/token \
               <tr><th>Method</th><th>Path</th><th>Description</th></tr>
             </thead>
             <tbody>
+              <tr><td><span class="method get">GET</span></td><td class="path">/userinfo</td><td>Third-party profile: id / email / avatar</td></tr>
+              <tr><td><span class="method get">GET</span></td><td class="path">/v1/users/:id</td><td>Lookup by userId (App credentials)</td></tr>
               <tr><td><span class="method get">GET</span></td><td class="path">/authorize</td><td>Validate client_id + redirect_uri (JSON)</td></tr>
               <tr><td><span class="method post">POST</span></td><td class="path">/auth/authorize</td><td>Complete login; returns <code>redirectTo</code> (Bearer user token)</td></tr>
               <tr><td><span class="method post">POST</span></td><td class="path">/auth/token</td><td>Exchange code + client_secret for JWT</td></tr>

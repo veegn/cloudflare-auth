@@ -4,4 +4,5 @@ pub mod account;
 pub mod apps;
 pub mod assets;
 pub mod authorize_flow;
+pub mod media;
 pub mod userinfo;

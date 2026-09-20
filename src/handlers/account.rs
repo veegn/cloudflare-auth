@@ -3,11 +3,11 @@
 use serde_json::{json, Value};
 use worker::*;
 
-use crate::avatar::{generate_avatar_seed, render_identicon_svg};
+use crate::avatar::generate_avatar_seed;
 use crate::config;
-use crate::db::{js_str, load_user, db_first, db_run, public_user, AvatarSeedRow};
+use crate::db::{js_str, load_user, db_first, db_run, public_user};
 use crate::http::{
-    api_err, body_json, body_raw, body_str, ok_json, svg_response, url_decode, ApiResult,
+    api_err, body_json, body_raw, body_str, ok_json, ApiResult,
 };
 use crate::logging;
 use crate::password::{hash_password, random_id, verify_password};
@@ -268,43 +268,4 @@ pub async fn handle_logout(req: &Request, env: &Env) -> ApiResult<Response> {
         serde_json::json!({ "user_id": ctx.user.id, "session_id": ctx.session_id }),
     );
     ok_json(json!({ "ok": true }))
-}
-
-pub async fn handle_avatar_refresh(req: &Request, env: &Env) -> ApiResult<Response> {
-    let ctx = require_auth(req, env).await?;
-    let seed = generate_avatar_seed();
-    db_run(
-        env,
-        "UPDATE users SET avatar_seed = ?1, updated_at = datetime('now') WHERE id = ?2",
-        &[js_str(&seed), js_str(&ctx.user.id)],
-    )
-    .await?;
-    let user = load_user(env, &ctx.user.id).await?;
-    ok_json(json!({ "user": public_user(&user) }))
-}
-
-pub async fn handle_avatar(env: &Env, user_id: &str, url: &Url) -> ApiResult<Response> {
-    let mut qseed = None;
-    if let Some(q) = url.query() {
-        for pair in q.split('&') {
-            if let Some((k, v)) = pair.split_once('=') {
-                if url_decode(k) == "v" {
-                    qseed = Some(url_decode(v));
-                }
-            }
-        }
-    }
-    let row = db_first::<AvatarSeedRow>(
-        env,
-        "SELECT id, avatar_seed FROM users WHERE id = ?",
-        &[js_str(user_id)],
-    )
-    .await?
-    .ok_or_else(|| api_err(404, "not_found", "Not found"))?;
-    let seed = row
-        .avatar_seed
-        .filter(|s| !s.is_empty())
-        .or(qseed)
-        .unwrap_or_else(|| row.id.clone());
-    svg_response(render_identicon_svg(&seed, 128), 604800)
 }

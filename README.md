@@ -2,9 +2,12 @@
 
 Cloudflare Workers（**Rust / workers-rs**）+ **D1** 鉴权服务。
 
-提供：邮箱密码注册/登录、JWT 会话、AppID 多应用接入、重定向登录（含二次确认）、第三方用户信息查询、随机头像，以及 Google 风格管理台。
+提供：邮箱密码注册/登录、JWT 会话、AppID 多应用接入、重定向登录（含二次确认）、第三方用户信息查询、R2 头像/应用图标上传（服务端强制裁剪压缩）、随机头像，以及 Google 风格管理台。
 
 **生产地址**：https://auth.dayti.de
+
+**文档语言 / Docs**: 中文见本页 · English: [README.en.md](./README.en.md)  
+**界面语言 / UI**: 管理台侧栏 **EN | 中文** 可切换（`public/i18n.js`）。
 
 | 入口 | 说明 |
 |------|------|
@@ -33,13 +36,16 @@ cloudflare-auth/
 │   ├── time.rs               # Unix ↔ ISO-8601（Worker 安全）
 │   ├── validate.rs           # 业务校验、App 凭证、redirect_uri
 │   ├── logging.rs            # Workers Observability 结构化日志
+│   ├── media.rs              # 上传图强制裁剪+压缩（JPEG）
+│   ├── media_r2.rs           # R2 MEDIA 绑定读写
 │   ├── password.rs           # PBKDF2 + HS256 JWT + 随机 ID
 │   ├── authorize.rs          # OAuth-like 授权流（inspect/complete/exchange）
 │   ├── config.rs             # wrangler [vars] 解析
 │   └── avatar.rs             # identicon SVG
 ├── public/                   # 管理台静态资源
 │   ├── index.html            # 壳 + CSS；{{APP_NAME}} / {{SERVICE_URL}} 由 Worker 注入
-│   └── console.js            # 控制台逻辑（IIFE，无 bundler）
+│   ├── console.js            # 控制台逻辑（IIFE，无 bundler）
+│   └── i18n.js               # 中英词典 + 语言切换
 ├── schema.sql                # D1 表结构
 ├── Cargo.toml                # Rust crate（根目录）
 ├── wrangler.toml             # Worker / assets / D1 / vars / 自定义域
@@ -58,6 +64,24 @@ cloudflare-auth/
 | 密码 / App Secret | PBKDF2-SHA256（默认 100k 迭代） |
 | 会话 | HS256 JWT + D1 `sessions` 可撤销 |
 | 前端 | 单页管理台，同源调用 API |
+| 对象存储 | Cloudflare R2（头像 / 应用图标） |
+
+### 媒体上传（R2）
+
+| 项 | 说明 |
+|----|------|
+| Bucket / 绑定 | `cloudflare-auth-media` / `MEDIA` |
+| 头像 | `POST /auth/avatar`（Bearer，body=图片字节） |
+| 应用图标 | `POST /apps/:id/icon`（Bearer owner，body=图片字节） |
+| 服务端处理 | **强制**中心裁剪正方形 → 256px → JPEG q≈82 |
+| 存储键 | `avatars/{user_id}.jpg`、`apps/{app_id}.jpg` |
+| 读取 | R2 自定义图优先，否则外部 `iconUrl` 302 / identicon |
+| 恢复默认头像 | `POST /auth/avatar/refresh`（删 R2 对象） |
+
+```powershell
+npx wrangler r2 bucket create cloudflare-auth-media
+npx wrangler d1 execute cloudflare-auth-db --remote --file=./migrations/002_media_r2.sql
+```
 
 ---
 

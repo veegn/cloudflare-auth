@@ -3,12 +3,9 @@
 use serde_json::{json, Value};
 use worker::*;
 
-use crate::avatar::render_identicon_svg;
 use crate::config;
-use crate::db::{
-    js_str, load_owned_app, db_all, db_run, public_app, AppRow,
-};
-use crate::http::{api_err, body_json, body_str, ok_json, svg_response, ApiResult};
+use crate::db::{js_str, load_owned_app, db_all, db_run, public_app, AppRow};
+use crate::http::{api_err, body_json, body_str, ok_json, ApiResult};
 use crate::logging;
 use crate::password::{hash_password, random_hex, random_id};
 use crate::session::require_auth;
@@ -201,26 +198,4 @@ pub async fn handle_revoke_app(req: &Request, env: &Env, id: &str) -> ApiResult<
     }
     let app = load_owned_app(env, &ctx.user.id, id).await?;
     ok_json(json!({ "app": public_app(&app) }))
-}
-
-/// 公开应用图标：自定义 URL 则 302，否则按 appId 生成 identicon
-pub async fn handle_app_icon(env: &Env, app_id: &str) -> ApiResult<Response> {
-    let app_id = app_id.trim();
-    let app = crate::db::db_first::<AppRow>(
-        env,
-        "SELECT * FROM apps WHERE app_id = ?",
-        &[js_str(app_id)],
-    )
-    .await?
-    .ok_or_else(|| api_err(404, "not_found", "App not found"))?;
-
-    if let Some(custom) = normalize_icon_url(app.icon_url.as_deref()) {
-        return Response::redirect_with_status(
-            url::Url::parse(&custom).map_err(|_| api_err(400, "invalid_icon", "Bad icon URL"))?,
-            302,
-        )
-        .map_err(|_| api_err(500, "internal_error", "redirect failed"));
-    }
-
-    svg_response(render_identicon_svg(&app.app_id, 128), 3600)
 }

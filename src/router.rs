@@ -74,8 +74,12 @@ async fn route(
     if method == Method::Post && path == "/auth/logout" {
         return handlers::account::handle_logout(req, env).await;
     }
+    // R2 头像上传 / 恢复 identicon
+    if method == Method::Post && path == "/auth/avatar" {
+        return handlers::media::handle_upload_avatar(req, env).await;
+    }
     if method == Method::Post && path == "/auth/avatar/refresh" {
-        return handlers::account::handle_avatar_refresh(req, env).await;
+        return handlers::media::handle_avatar_refresh(req, env).await;
     }
 
     // ── 第三方用户信息 ────────────────────────────────────
@@ -98,7 +102,7 @@ async fn route(
     if method == Method::Get {
         if let Some(rest) = path.strip_prefix("/users/") {
             if let Some(uid) = rest.strip_suffix("/avatar") {
-                return handlers::account::handle_avatar(env, uid, url).await;
+                return handlers::media::handle_avatar(env, uid, url).await;
             }
             if let Some(uid) = rest.strip_suffix("/profile") {
                 return handlers::userinfo::handle_user_profile_by_id(req, env, uid).await;
@@ -111,7 +115,7 @@ async fn route(
             .strip_prefix("/v1/apps/")
             .and_then(|rest| rest.strip_suffix("/icon"))
         {
-            return handlers::apps::handle_app_icon(env, app_id).await;
+            return handlers::media::handle_app_icon(env, app_id, false).await;
         }
     }
 
@@ -129,7 +133,10 @@ async fn route(
         };
         let id = url_decode(id);
         if method == Method::Get && action == Some("icon") {
-            return handlers::apps::handle_app_icon(env, &id).await;
+            return handlers::media::handle_app_icon(env, &id, true).await;
+        }
+        if method == Method::Post && action == Some("icon") {
+            return handlers::media::handle_upload_app_icon(req, env, &id).await;
         }
         if method == Method::Get && action.is_none() {
             return handlers::apps::handle_get_app(req, env, &id).await;

@@ -22,6 +22,7 @@ pub struct AppRow {
     pub status: String,
     pub redirect_uris: String,
     pub icon_url: Option<String>,
+    pub icon_object_key: Option<String>,
     pub created_at: String,
     pub updated_at: String,
     pub secret_rotated_at: Option<String>,
@@ -34,6 +35,7 @@ pub struct UserRow {
     pub username: String,
     pub password_hash: String,
     pub avatar_seed: Option<String>,
+    pub avatar_object_key: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -58,6 +60,11 @@ pub struct AuthCodeRow {
 pub struct AvatarSeedRow {
     pub id: String,
     pub avatar_seed: Option<String>,
+    pub avatar_object_key: Option<String>,
+}
+
+fn has_key(v: &Option<String>) -> bool {
+    v.as_ref().map(|s| !s.is_empty()).unwrap_or(false)
 }
 
 pub fn public_user(row: &UserRow) -> Value {
@@ -69,6 +76,7 @@ pub fn public_user(row: &UserRow) -> Value {
         "createdAt": row.created_at,
         "avatarSeed": seed,
         "avatarUrl": format!("/users/{}/avatar?v={}", row.id, seed),
+        "hasCustomAvatar": has_key(&row.avatar_object_key),
     })
 }
 
@@ -82,6 +90,7 @@ pub fn public_app(row: &AppRow) -> Value {
         "redirectUris": parse_redirect_uris(Some(&row.redirect_uris)),
         "iconUrl": normalize_icon_url(row.icon_url.as_deref()),
         "iconPath": format!("/v1/apps/{}/icon", row.app_id),
+        "hasCustomIcon": has_key(&row.icon_object_key),
         "createdAt": row.created_at,
         "updatedAt": row.updated_at,
         "secretRotatedAt": row.secret_rotated_at,

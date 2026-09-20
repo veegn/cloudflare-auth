@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -1187,6 +1187,30 @@ h2 {
   .actions { flex-direction: column; align-items: stretch; }
 }
 
+
+.lang-switch {
+  margin-top: auto;
+  padding: 12px 8px 0;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-start;
+}
+.lang-switch button {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+.lang-switch button.on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 500;
+}
   </style>
 </head>
 <body>
@@ -1201,15 +1225,15 @@ h2 {
       <nav class="nav" aria-label="Primary">
         <a href="#" id="navAuth" class="on">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" stroke="currentColor" stroke-width="1.5"/><path d="M5 19.5c1.4-3.2 3.9-4.8 7-4.8s5.6 1.6 7 4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          Account
+          <span data-i18n="nav.account">Account</span>
         </a>
         <a href="#" id="navDocs">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4.5h9.5L19 8v11.5H6v-15z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M15 4.5V8h3.5M9 12h6M9 15.5h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          Docs
+          <span data-i18n="nav.docs">Docs</span>
         </a>
         <a href="#" id="navApps" hidden>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 10h3M8 14h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          Applications
+          <span data-i18n="nav.apps">Applications</span>
         </a>
       </nav>
       <div class="sidebar-foot" id="sidebarFoot" hidden>
@@ -1217,8 +1241,12 @@ h2 {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M10 6H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4M14 15l3-3-3-3M10 12h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Sign out
+          <span data-i18n="nav.signOut">Sign out</span>
         </button>
+      </div>
+      <div class="lang-switch" id="langSwitch" role="group" aria-label="Language">
+        <button type="button" data-lang="en" class="on">EN</button>
+        <button type="button" data-lang="zh">中文</button>
       </div>
     </aside>
 
@@ -1230,10 +1258,10 @@ h2 {
             <path d="M7.5 17.5h9.2c2.1 0 3.8-1.6 3.8-3.7 0-1.9-1.4-3.4-3.2-3.7C16.7 7.7 14.7 6 12.2 6c-2.8 0-5 2.1-5.3 4.8-.2 0-.5-.1-.7-.1-1.9 0-3.4 1.5-3.4 3.4s1.5 3.4 3.4 3.4z" stroke="#1a73e8" stroke-width="1.5" stroke-linejoin="round"/>
           </svg>
         </div>
-        <h1 id="loginTitle">Sign in</h1>
-        <p class="lede" id="loginLede">Use your {{APP_NAME}} account</p>
+        <h1 id="loginTitle" data-i18n="auth.signIn">Sign in</h1>
+        <p class="lede" id="loginLede" data-i18n="auth.signInLede">Use your {{APP_NAME}} account</p>
         <div class="authz-banner" id="authzBanner" role="status">
-          <p class="eyebrow" id="authzEyebrow">Third-party application</p>
+          <p class="eyebrow" id="authzEyebrow" data-i18n="authz.thirdParty">Third-party application</p>
           <div class="title">
             <span class="app-mark" id="authzMark" aria-hidden="true">A</span>
             <span id="authzTitle">Application</span>
@@ -1244,18 +1272,18 @@ h2 {
         <form class="form" id="loginForm" novalidate>
           <div class="banner" id="loginBanner" role="alert"></div>
           <div class="field">
-            <label for="loginEmail">Email</label>
-            <input id="loginEmail" name="email" type="email" autocomplete="username" placeholder="name@example.com" required />
+            <label for="loginEmail" data-i18n="auth.email">Email</label>
+            <input id="loginEmail" name="email" type="email" autocomplete="username" placeholder="name@example.com" data-i18n-placeholder="auth.ph.email" required />
             <p class="err" id="loginEmailErr"></p>
           </div>
           <div class="field">
-            <label for="loginPassword">Password</label>
-            <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required />
+            <label for="loginPassword" data-i18n="auth.password">Password</label>
+            <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="••••••••" data-i18n-placeholder="auth.ph.password" required />
             <p class="err" id="loginPasswordErr"></p>
           </div>
-          <button type="submit" class="btn btn-primary btn-block" id="loginSubmit">Sign in</button>
-          <p class="form-foot">New here? <a href="#" id="toRegister">Create an account</a></p>
-          <p class="form-foot-docs">Looking for integration details? <a href="#" class="js-docs">Read the docs</a></p>
+          <button type="submit" class="btn btn-primary btn-block" id="loginSubmit" data-i18n="auth.signIn">Sign in</button>
+          <p class="form-foot"><span data-i18n="auth.newHere">New here?</span> <a href="#" id="toRegister" data-i18n="auth.createAccount">Create an account</a></p>
+          <p class="form-foot-docs"><span data-i18n="auth.lookingDocs">Looking for integration details?</span> <a href="#" class="js-docs" data-i18n="auth.readDocs">Read the docs</a></p>
         </form>
       </section>
 
@@ -1266,10 +1294,10 @@ h2 {
             <path d="M7.5 17.5h9.2c2.1 0 3.8-1.6 3.8-3.7 0-1.9-1.4-3.4-3.2-3.7C16.7 7.7 14.7 6 12.2 6c-2.8 0-5 2.1-5.3 4.8-.2 0-.5-.1-.7-.1-1.9 0-3.4 1.5-3.4 3.4s1.5 3.4 3.4 3.4z" stroke="#1a73e8" stroke-width="1.5" stroke-linejoin="round"/>
           </svg>
         </div>
-        <h1 id="regTitle">Create your account</h1>
-        <p class="lede" id="regLede">Continue to {{APP_NAME}}</p>
+        <h1 id="regTitle" data-i18n="auth.createTitle">Create your account</h1>
+        <p class="lede" id="regLede" data-i18n="auth.createLede">Continue to {{APP_NAME}}</p>
         <div class="authz-banner" id="authzBannerReg" role="status">
-          <p class="eyebrow" id="authzEyebrowReg">Third-party application</p>
+          <p class="eyebrow" id="authzEyebrowReg" data-i18n="authz.thirdParty">Third-party application</p>
           <div class="title">
             <span class="app-mark" id="authzMarkReg" aria-hidden="true">A</span>
             <span id="authzTitleReg">Application</span>
@@ -1280,28 +1308,28 @@ h2 {
         <form class="form" id="registerForm" novalidate>
           <div class="banner" id="regBanner" role="alert"></div>
           <div class="field">
-            <label for="regEmail">Email</label>
+            <label for="regEmail" data-i18n="auth.email">Email</label>
             <input id="regEmail" name="email" type="email" autocomplete="email" placeholder="name@example.com" required />
             <p class="err" id="regEmailErr"></p>
           </div>
           <div class="field">
-            <label for="regUsername">Username</label>
+            <label for="regUsername" data-i18n="auth.username">Username</label>
             <input id="regUsername" name="username" type="text" autocomplete="username" placeholder="alice" required />
             <p class="err" id="regUsernameErr"></p>
           </div>
           <div class="field">
-            <label for="regPassword">Password</label>
-            <input id="regPassword" name="password" type="password" autocomplete="new-password" placeholder="At least 8 characters" required />
+            <label for="regPassword" data-i18n="auth.password">Password</label>
+            <input id="regPassword" name="password" type="password" autocomplete="new-password" placeholder="At least 8 characters" data-i18n-placeholder="auth.ph.passwordMin" required />
             <p class="err" id="regPasswordErr"></p>
           </div>
           <div class="field">
-            <label for="regConfirm">Confirm password</label>
-            <input id="regConfirm" name="confirm" type="password" autocomplete="new-password" placeholder="Repeat password" required />
+            <label for="regConfirm" data-i18n="auth.confirmPassword">Confirm password</label>
+            <input id="regConfirm" name="confirm" type="password" autocomplete="new-password" placeholder="Repeat password" data-i18n-placeholder="auth.ph.repeatPassword" required />
             <p class="err" id="regConfirmErr"></p>
           </div>
-          <button type="submit" class="btn btn-primary btn-block" id="regSubmit">Create account</button>
-          <p class="form-foot">Already have an account? <a href="#" id="toLogin">Sign in</a></p>
-          <p class="form-foot-docs">New to {{APP_NAME}}? <a href="#" class="js-docs-user">How accounts work</a></p>
+          <button type="submit" class="btn btn-primary btn-block" id="regSubmit" data-i18n="auth.createSubmit">Create account</button>
+          <p class="form-foot"><span data-i18n="auth.haveAccount">Already have an account?</span> <a href="#" id="toLogin" data-i18n="auth.signIn">Sign in</a></p>
+          <p class="form-foot-docs"><span data-i18n="auth.newTo">New to {{APP_NAME}}?</span> <a href="#" class="js-docs-user" data-i18n="auth.howAccounts">How accounts work</a></p>
         </form>
       </section>
 
@@ -1309,8 +1337,8 @@ h2 {
       <section class="view auth-wrap" id="view-authz-confirm" aria-labelledby="authzConfirmTitle" style="border:none;box-shadow:none;background:transparent;padding:0;">
         <div class="authz-confirm">
           <div class="authz-app-mark" id="authzConfirmMark" aria-hidden="true">A</div>
-          <h1 id="authzConfirmTitle">Continue</h1>
-          <p class="lede" id="authzConfirmLede">You are signed in. Confirm to continue to the application.</p>
+          <h1 id="authzConfirmTitle" data-i18n="authz.continue">Continue</h1>
+          <p class="lede" id="authzConfirmLede" data-i18n="authz.confirmLede">You are signed in. Confirm to continue to the application.</p>
 
           <div class="authz-account">
             <img class="avatar" id="authzConfirmAvatar" alt="" width="40" height="40" hidden />
@@ -1322,12 +1350,12 @@ h2 {
           </div>
 
           <div class="authz-confirm-actions">
-            <button type="button" class="btn btn-primary" id="authzContinueBtn">Continue</button>
-            <button type="button" class="btn btn-ghost" id="authzSwitchBtn">Use another account</button>
+            <button type="button" class="btn btn-primary" id="authzContinueBtn" data-i18n="authz.continue">Continue</button>
+            <button type="button" class="btn btn-ghost" id="authzSwitchBtn" data-i18n="authz.anotherAccount">Use another account</button>
           </div>
           <div class="authz-confirm-foot">
-            Not you?
-            <button type="button" id="authzSignOutBtn">Sign out</button>
+            <span data-i18n="authz.notYou">Not you?</span>
+            <button type="button" id="authzSignOutBtn"><span data-i18n="nav.signOut">Sign out</span></button>
           </div>
         </div>
       </section>
@@ -1339,41 +1367,43 @@ h2 {
             <img class="avatar" id="pfAvatar" alt="" width="72" height="72" hidden />
             <div class="avatar-fallback" id="pfAvatarFallback" aria-hidden="true">?</div>
             <div class="profile-head-text">
-              <h1 id="profileTitle">Profile</h1>
-              <p class="lede" style="margin:0;">Your account and session details.</p>
+              <h1 id="profileTitle" data-i18n="profile.title">Profile</h1>
+              <p class="lede" style="margin:0;" data-i18n="profile.lede">Your account and session details.</p>
             </div>
             <div class="profile-head-actions">
-              <button type="button" class="btn btn-ghost btn-sm" id="editProfileBtn">Edit profile</button>
-              <button type="button" class="btn btn-ghost btn-sm" id="refreshAvatarBtn" title="Generate a new default avatar">New avatar</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="editProfileBtn" data-i18n="profile.edit">Edit profile</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="refreshAvatarBtn" title="Generate a new default avatar" data-i18n-title="profile.newAvatarTitle" data-i18n="profile.newAvatar">New avatar</button>
+              <button type="button" class="btn btn-primary btn-sm" id="uploadAvatarBtn" title="Upload photo (server crop+compress)" data-i18n-title="profile.uploadPhotoTitle" data-i18n="profile.uploadPhoto">Upload photo</button>
+              <input type="file" id="uploadAvatarInput" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
             </div>
           </div>
 
           <div class="profile-edit-panel" id="profileEditPanel" hidden>
-            <h2 style="margin-top:0;">Account details</h2>
-            <p class="hint" style="margin:0 0 14px;color:var(--ink-2);">Update your email, username, or password.</p>
+            <h2 style="margin-top:0;" data-i18n="profile.accountDetails">Account details</h2>
+            <p class="hint" style="margin:0 0 14px;color:var(--ink-2);" data-i18n="profile.updateHint">Update your email, username, or password.</p>
             <form class="form" id="profileEditForm" novalidate style="margin-top:0;max-width:480px;">
               <div class="banner" id="profileEditBanner" role="alert"></div>
               <div class="field">
-                <label for="editEmail">Email</label>
+                <label for="editEmail" data-i18n="auth.email">Email</label>
                 <input id="editEmail" name="email" type="email" autocomplete="email" required />
                 <p class="err" id="editEmailErr"></p>
               </div>
               <div class="field">
-                <label for="editUsername">Username</label>
+                <label for="editUsername" data-i18n="auth.username">Username</label>
                 <input id="editUsername" name="username" type="text" autocomplete="username" required />
                 <p class="err" id="editUsernameErr"></p>
               </div>
               <div class="field">
-                <label for="editCurrentPassword">Current password <span style="font-weight:400;color:var(--ink-3)">(only to change password)</span></label>
+                <label for="editCurrentPassword"><span data-i18n="profile.currentPassword">Current password</span> <span style="font-weight:400;color:var(--ink-3)">(only to change password)</span></label>
                 <input id="editCurrentPassword" name="currentPassword" type="password" autocomplete="current-password" placeholder="Leave blank to keep password" />
               </div>
               <div class="field">
-                <label for="editNewPassword">New password <span style="font-weight:400;color:var(--ink-3)">(optional)</span></label>
+                <label for="editNewPassword"><span data-i18n="profile.newPassword">New password</span> <span style="font-weight:400;color:var(--ink-3)">(optional)</span></label>
                 <input id="editNewPassword" name="newPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters" />
                 <p class="err" id="editNewPasswordErr"></p>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;align-self:flex-start;">
-                <button type="submit" class="btn btn-primary" id="profileEditSubmit" style="min-width:140px;">Save changes</button>
+                <button type="submit" class="btn btn-primary" id="profileEditSubmit" style="min-width:140px;"><span data-i18n="profile.saveChanges">Save changes</span></button>
                 <button type="button" class="btn btn-ghost" id="profileEditCancel">Cancel</button>
               </div>
             </form>
@@ -1410,13 +1440,13 @@ h2 {
             </div>
           </div>
 
-          <h2>Session status</h2>
+          <h2 data-i18n="profile.sessionStatus">Session status</h2>
           <p class="hint" style="margin:0 0 10px;color:var(--ink);font-size:14px;font-weight:500;">Current session</p>
           <span class="pill"><span class="dot" aria-hidden="true"></span>Active · Expires in 24h</span>
           <p class="hint mono" id="pfExpiry">This session will expire at —.</p>
 
           <h2>API Base URL</h2>
-          <p class="hint" style="margin:0 0 0;color:var(--ink);font-size:14px;font-weight:500;">Your authentication API base URL</p>
+          <p class="hint" style="margin:0 0 0;color:var(--ink);font-size:14px;font-weight:500;" data-i18n="profile.apiBaseHint">Your authentication API base URL</p>
           <div class="field-row">
             <div class="field-static" id="apiBase" title="API base URL"></div>
             <button type="button" class="btn btn-ghost btn-sm" id="copyIconBtn" aria-label="Copy API base URL">
@@ -1468,7 +1498,7 @@ h2 {
             </div>
           </div>
 
-          <h2 id="appFormTitle">Register a new app</h2>
+          <h2 id="appFormTitle" data-i18n="apps.formNew">Register a new app</h2>
           <p class="hint" id="appFormHint" style="margin:0 0 12px;color:var(--ink-2);">Create an App ID, then register redirect URIs for redirect login.</p>
           <form class="form" id="appForm" novalidate style="margin-top:4px;max-width:480px;">
             <div class="banner" id="appBanner" role="alert"></div>
@@ -1477,60 +1507,65 @@ h2 {
               <div class="field-static" id="appEditAppId" style="font-family:var(--mono);font-size:13px;">—</div>
             </div>
             <div class="field">
-              <label for="appName">App name</label>
+              <label for="appName" data-i18n="apps.name">App name</label>
               <input id="appName" name="name" type="text" placeholder="Acme Dashboard" required maxlength="64" />
               <p class="err" id="appNameErr"></p>
             </div>
             <div class="field">
-              <label for="appDesc">Description <span style="font-weight:400;color:var(--ink-3)">(optional)</span></label>
+              <label for="appDesc"><span data-i18n="apps.description">Description</span> <span style="font-weight:400;color:var(--ink-3)">(optional)</span></label>
               <input id="appDesc" name="description" type="text" placeholder="What this integration is for" maxlength="256" />
             </div>
             <div class="field">
-              <label for="appRedirectUris">Redirect URIs <span style="font-weight:400;color:var(--ink-3)">(optional, one per line)</span></label>
+              <label for="appRedirectUris" data-i18n="apps.redirectUris">Redirect URIs <span style="font-weight:400;color:var(--ink-3)">(optional, one per line)</span></label>
               <input id="appRedirectUris" name="redirectUris" type="text" placeholder="https://app.example.com/callback" style="font-family:var(--mono);font-size:13px;" />
               <p class="uris-hint">Required for redirect login. Exact match; max 20 URIs.</p>
             </div>
             <div class="field">
-              <label for="appIconUrl">Icon URL <span style="font-weight:400;color:var(--ink-3)">(optional)</span></label>
+              <label for="appIconUrl" data-i18n="apps.iconUrl">Icon URL <span style="font-weight:400;color:var(--ink-3)">(optional)</span></label>
               <input id="appIconUrl" name="iconUrl" type="url" placeholder="https://cdn.example.com/icon.png" style="font-family:var(--mono);font-size:13px;" />
+              <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+                <button type="button" class="btn btn-ghost btn-sm" id="uploadAppIconBtn" data-i18n="apps.uploadIcon">Upload icon</button>
+                <input type="file" id="uploadAppIconInput" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
+                <span class="hint" id="appIconUploadHint" style="margin:0;font-size:12px;color:var(--ink-3);">Center-cropped &amp; compressed on server</span>
+              </div>
               <p class="uris-hint">HTTPS image on sign-in / consent. Empty = generated icon.</p>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-self:flex-start;">
-              <button type="submit" class="btn btn-primary" id="appSubmit" style="min-width:160px;">Create application</button>
-              <button type="button" class="btn btn-ghost" id="appCancelEdit" hidden>Cancel</button>
+              <button type="submit" class="btn btn-primary" id="appSubmit" style="min-width:160px;" data-i18n="apps.create">Create application</button>
+              <button type="button" class="btn btn-ghost" id="appCancelEdit" hidden data-i18n="profile.cancel">Cancel</button>
             </div>
           </form>
 
-          <h2>Your apps</h2>
+          <h2 data-i18n="apps.yourApps">Your apps</h2>
           <div class="app-list" id="appList"></div>
-          <p class="empty-apps" id="appsEmpty" hidden>No applications yet. Create one to get an App ID.</p>
+          <p class="empty-apps" id="appsEmpty" hidden data-i18n="apps.empty">No applications yet. Create one to get an App ID.</p>
         </div>
       </section>
 
       <!-- Docs landing -->
       <section class="view docs-home" id="view-docs" aria-labelledby="docsTitle">
-        <h1 id="docsTitle">Documentation</h1>
-        <p class="docs-lede">Choose the guide that matches how you use {{APP_NAME}} — integrate the API as a developer, or manage your own account as a user.</p>
+        <h1 id="docsTitle" data-i18n="docs.title">Documentation</h1>
+        <p class="docs-lede" data-i18n="docs.lede">Choose the guide that matches how you use {{APP_NAME}} — integrate the API as a developer, or manage your own account as a user.</p>
         <div class="audience">
           <a class="audience-card" href="#" id="cardDocsDev">
             <span class="tag">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 8 4 12l4 4M16 8l4 4-4 4M13 5l-2 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              For developers
+              <span data-i18n="docs.forDevelopers">For developers</span>
             </span>
-            <h3>API &amp; integration</h3>
-            <p>Endpoints, auth headers, request bodies, error codes, and how to wire register / login / session into your app.</p>
-            <span class="go">Open developer docs
+            <h3 data-i18n="docs.apiIntegration">API &amp; integration</h3>
+            <p data-i18n="docs.apiIntegrationDesc">Endpoints, auth headers, request bodies, error codes, and how to wire register / login / session into your app.</p>
+            <span class="go"><span data-i18n="docs.openDev">Open developer docs</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
           </a>
           <a class="audience-card" href="#" id="cardDocsUser">
             <span class="tag">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.25" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 19c1.5-3 4-4.5 6.5-4.5S16.5 16 18.5 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              For users
+              <span data-i18n="docs.forUsers">For users</span>
             </span>
-            <h3>Account &amp; sessions</h3>
-            <p>Create an account, sign in, understand session expiry, sign out safely, and know what profile data is stored.</p>
-            <span class="go">Open user guide
+            <h3 data-i18n="docs.accountSessions">Account &amp; sessions</h3>
+            <p data-i18n="docs.accountSessionsDesc">Create an account, sign in, understand session expiry, sign out safely, and know what profile data is stored.</p>
+            <span class="go"><span data-i18n="docs.openUser">Open user guide</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
           </a>
@@ -1539,12 +1574,12 @@ h2 {
 
       <!-- Developer docs -->
       <section class="view doc-wrap" id="view-docs-dev" aria-labelledby="docsDevTitle">
-        <p class="doc-crumb"><a href="#" class="js-docs">Docs</a><span>/</span><span>Developers</span></p>
-        <h1 id="docsDevTitle">Developer guide</h1>
-        <p class="lede">Integrate {{APP_NAME}} into your app with email/password accounts and revocable sessions.</p>
+        <p class="doc-crumb"><a href="#" class="js-docs" data-i18n="docs.crumb">Docs</a><span>/</span><span data-i18n="docs.crumbDevelopers">Developers</span></p>
+        <h1 id="docsDevTitle" data-i18n="docs.devTitle">Developer guide</h1>
+        <p class="lede"><span data-i18n="docs.devLede">Integrate {{APP_NAME}} into your app with email/password accounts and revocable sessions.</span></p>
 
         <div class="doc-section">
-          <h2>Quick start</h2>
+          <h2 data-i18n="docs.quickStart">Quick start</h2>
           <p>Base URL for this prototype environment:</p>
           <div class="codeblock">https://auth.dayti.de</div>
           <p>Local Worker (during development):</p>
@@ -1558,14 +1593,14 @@ h2 {
         </div>
 
         <div class="doc-section">
-          <h2>API reference</h2>
+          <h2 data-i18n="docs.apiRef">API reference</h2>
           <table class="api-table">
             <thead>
               <tr>
-                <th>Method</th>
-                <th>Path</th>
-                <th>Auth</th>
-                <th>Description</th>
+                <th data-i18n="docs.th.method">Method</th>
+                <th data-i18n="docs.th.path">Path</th>
+                <th data-i18n="docs.th.auth">Auth</th>
+                <th data-i18n="docs.th.desc">Description</th>
               </tr>
             </thead>
             <tbody>
@@ -2034,8 +2069,8 @@ npm run dev
 
       <!-- User docs -->
       <section class="view doc-wrap" id="view-docs-user" aria-labelledby="docsUserTitle">
-        <p class="doc-crumb"><a href="#" class="js-docs">Docs</a><span>/</span><span>Users</span></p>
-        <h1 id="docsUserTitle">User guide</h1>
+        <p class="doc-crumb"><a href="#" class="js-docs" data-i18n="docs.crumb">Docs</a><span>/</span><span data-i18n="docs.crumbUsers">Users</span></p>
+        <h1 id="docsUserTitle" data-i18n="docs.userTitle">User guide</h1>
         <p class="lede">How to create an account, sign in, keep your session secure, and sign out.</p>
 
         <div class="doc-section">
@@ -2147,6 +2182,7 @@ npm run dev
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script src="/i18n.js"></script>
   <script src="/console.js"></script>
 </body>
 </html>

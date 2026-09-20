@@ -44,3 +44,8 @@ PBKDF2_ITERATIONS = "100000"
 binding = "DB"
 database_name = "cloudflare-auth-db"
 database_id = "be482cc2-c89f-4cc4-8c39-4292294fad2b"
+
+# 用户头像 / 应用图标（上传前 Worker 内强制裁剪+压缩）
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "cloudflare-auth-media"

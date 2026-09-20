@@ -115,6 +115,20 @@ pub fn svg_response(svg: String, max_age_secs: u32) -> ApiResult<Response> {
         .map_err(|_| api_err(500, "internal_error", "svg response failed"))
 }
 
+/// 二进制响应（R2 图片等）
+pub fn bytes_response(
+    bytes: Vec<u8>,
+    content_type: &str,
+    cache_control: &str,
+) -> ApiResult<Response> {
+    let headers = Headers::new();
+    headers.set("content-type", content_type).ok();
+    headers.set("cache-control", cache_control).ok();
+    Response::from_body(ResponseBody::Body(bytes.into()))
+        .map(|r| r.with_headers(headers))
+        .map_err(|_| api_err(500, "internal_error", "binary response failed"))
+}
+
 /// percent-decode（路径 / query 片段）
 pub fn url_decode(s: &str) -> String {
     let bytes = s.as_bytes();

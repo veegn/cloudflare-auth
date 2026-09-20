@@ -5,6 +5,9 @@
  */
     (function () {
       const API_BASE = "";
+      function t(key, vars) {
+        return (window.I18N && window.I18N.t(key, vars)) || key;
+      }
       const $ = (id) => document.getElementById(id);
       const views = {
         login: $("view-login"),
@@ -56,6 +59,54 @@
           throw err;
         }
         return data;
+      }
+
+      /** 二进制上传（图片 raw body） */
+      async function apiBinary(path, blob) {
+        const res = await fetch(API_BASE + path, {
+          method: "POST",
+          headers: Object.assign(
+            { "content-type": blob.type || "application/octet-stream" },
+            authHeaders()
+          ),
+          body: blob,
+        });
+        let data = null;
+        try { data = await res.json(); } catch { data = null; }
+        if (!res.ok) {
+          const err = new Error((data && data.message) || res.statusText || "Upload failed");
+          err.status = res.status;
+          err.code = data && data.error;
+          throw err;
+        }
+        return data;
+      }
+
+      /**
+       * 客户端预处理（不可跳过服务端处理）：中心裁剪正方形 + JPEG 压缩。
+       * 服务端仍会再次 crop+resize，保证 API 直传也被强制处理。
+       */
+      async function prepareSquareJpeg(file, maxSize) {
+        const bitmap = await createImageBitmap(file);
+        const side = Math.min(bitmap.width, bitmap.height);
+        const x = (bitmap.width - side) / 2;
+        const y = (bitmap.height - side) / 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = maxSize;
+        canvas.height = maxSize;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(bitmap, x, y, side, side, 0, 0, maxSize, maxSize);
+        const blob = await new Promise((resolve) =>
+          canvas.toBlob(resolve, "image/jpeg", 0.82)
+        );
+        if (!blob) throw new Error("Image compress failed");
+        return blob;
+      }
+
+      async function uploadImageFile(path, file) {
+        if (!file) return null;
+        const blob = await prepareSquareJpeg(file, 256);
+        return apiBinary(path, blob);
       }
 
       /* ── Shell chrome / view routing ── */
@@ -123,10 +174,10 @@
         if (loading) {
           btn.disabled = true;
           btn.dataset.label = btn.textContent;
-          btn.innerHTML = '<span class="spinner" aria-hidden="true"></span> ' + (label || "Working…");
+          btn.innerHTML = '<span class="spinner" aria-hidden="true"></span> ' + (label || t("toast.working"));
         } else {
           btn.disabled = false;
-          btn.textContent = btn.dataset.label || label || "Submit";
+          btn.textContent = btn.dataset.label || label || t("auth.signIn");
         }
       }
 
@@ -140,9 +191,9 @@
         const hours = Math.round((sessionExpiresIn || 86400) / 3600);
         const label = hours >= 24 ? Math.round(hours / 24) + "d" : hours + "h";
         const pill = document.querySelector("#view-profile .pill");
-        if (pill) pill.innerHTML = '<span class="dot" aria-hidden="true"></span>Active · Expires in ' + label;
+        if (pill) pill.innerHTML = '<span class="dot" aria-hidden="true"></span>' + t("profile.activeExpires", { label: label });
         const exp = new Date(Date.now() + (sessionExpiresIn || 86400) * 1000);
-        $("pfExpiry").textContent = "This session will expire at " + exp.toISOString().replace(/\.\d{3}Z$/, "Z") + ".";
+        $("pfExpiry").textContent = t("profile.willExpire", { time: exp.toISOString().replace(/\.\d{3}Z$/, "Z") });
         const origin = location.origin;
         $("apiBase").textContent = origin;
       }
@@ -196,14 +247,37 @@
           const data = await api("/auth/avatar/refresh", { method: "POST" });
           store.user = data.user;
           renderAvatar(data.user);
-          toast("New avatar generated");
+          toast(t("toast.newAvatar"));
         } catch (err) {
           if (err.status === 401) {
             clearSession();
             show("login");
-            toast("Session expired — sign in again");
+            toast(t("toast.sessionExpired"));
           } else {
             toast(err.message || "Could not refresh avatar");
+          }
+        }
+      });
+
+      $("uploadAvatarBtn") && $("uploadAvatarBtn").addEventListener("click", () => {
+        $("uploadAvatarInput") && $("uploadAvatarInput").click();
+      });
+      $("uploadAvatarInput") && $("uploadAvatarInput").addEventListener("change", async (e) => {
+        const file = e.target.files && e.target.files[0];
+        e.target.value = "";
+        if (!file) return;
+        try {
+          const data = await uploadImageFile("/auth/avatar", file);
+          store.user = data.user;
+          renderAvatar(data.user);
+          toast(t("toast.avatarUploaded"));
+        } catch (err) {
+          if (err.status === 401) {
+            clearSession();
+            show("login");
+            toast(t("toast.sessionExpired"));
+          } else {
+            toast(err.message || "Avatar upload failed");
           }
         }
       });
@@ -288,7 +362,7 @@
           store.user = data.user;
           fillProfile(data.user);
           closeProfileEdit();
-          toast("Profile updated");
+          toast(t("toast.profileUpdated"));
         } catch (err) {
           if (err.status === 401) {
             setBanner("profileEditBanner", err.message || "Current password is incorrect");
@@ -391,9 +465,9 @@
 
         if (opts.error) {
           box.classList.add("on", "err");
-          if (eyebrow) eyebrow.textContent = "Authorization error";
+          if (eyebrow) eyebrow.textContent = t("authz.error");
           if (mark) mark.textContent = "!";
-          if (title) title.textContent = "Sign-in unavailable";
+          if (title) title.textContent = t("authz.unavailable");
           if (desc) desc.textContent = "";
           if (meta) meta.textContent = opts.error;
           return;
@@ -402,7 +476,7 @@
         box.classList.add("on");
         box.classList.remove("err");
         const name = opts.name || "Application";
-        if (eyebrow) eyebrow.textContent = "Requesting sign-in";
+        if (eyebrow) eyebrow.textContent = t("authz.requesting");
         if (mark) {
           if (opts.icon) {
             mark.innerHTML =
@@ -447,8 +521,8 @@
             const box = $(id);
             if (box) box.classList.remove("on", "err");
           });
-          if (loginLede) loginLede.textContent = "Use your " + UI_APP_NAME + " account";
-          if (regLede) regLede.textContent = "Continue to " + UI_APP_NAME;
+          if (loginLede) loginLede.textContent = t("authz.useAccount");
+          if (regLede) regLede.textContent = t("authz.continueApp");
           return;
         }
 
@@ -476,11 +550,11 @@
         );
 
         if (!shared.error && authz.appName) {
-          if (loginLede) loginLede.textContent = "Sign in to continue to " + authz.appName;
-          if (regLede) regLede.textContent = "Create an account for " + authz.appName;
+          if (loginLede) loginLede.textContent = t("authz.signInContinue", { name: authz.appName });
+          if (regLede) regLede.textContent = t("authz.createFor", { name: authz.appName });
         } else {
-          if (loginLede) loginLede.textContent = "Use your " + UI_APP_NAME + " account";
-          if (regLede) regLede.textContent = "Continue to " + UI_APP_NAME;
+          if (loginLede) loginLede.textContent = t("authz.useAccount");
+          if (regLede) regLede.textContent = t("authz.continueApp");
         }
       }
 
@@ -586,7 +660,7 @@
           }
         }
         const title = $("authzConfirmTitle");
-        if (title) title.textContent = "Continue to " + appName + "?";
+        if (title) title.textContent = t("authz.continueTo", { name: appName });
         const lede = $("authzConfirmLede");
         if (lede) {
           lede.textContent = authz.appDescription
@@ -600,7 +674,7 @@
           $("authzConfirmEmail").textContent = user.email || "";
         }
         const cont = $("authzContinueBtn");
-        if (cont) cont.textContent = "Continue as " + (user.username || user.email || "this account");
+        if (cont) cont.textContent = t("authz.continueAs", { name: user.username || user.email || "this account" });
         renderAvatarInto($("authzConfirmAvatar"), $("authzConfirmAvatarFb"), user);
         show("authz-confirm");
       }
@@ -626,7 +700,7 @@
         $("loginForm").reset();
         showAuthzBanners();
         show("login");
-        toast("Sign in with another account");
+        toast(t("toast.switchAccount"));
       });
 
       $("authzSignOutBtn") && $("authzSignOutBtn").addEventListener("click", async () => {
@@ -641,7 +715,7 @@
         $("loginForm").reset();
         showAuthzBanners();
         show("login");
-        toast("Signed out");
+        toast(t("toast.signedOut"));
       });
 
       /* ── Applications CRUD ── */
@@ -685,21 +759,21 @@
               <div class="app-meta-text">
               <h3>${escapeHtml(app.name)}
                 <span class="status-chip${app.status === "revoked" ? " revoked" : ""}">
-                  <span class="dot" aria-hidden="true"></span>${app.status === "active" ? "Active" : "Revoked"}
+                  <span class="dot" aria-hidden="true"></span>${app.status === "active" ? t("apps.active") : t("apps.revoked")}
                 </span>
               </h3>
-              <p>${escapeHtml(app.description || "No description")}</p>
+              <p>${escapeHtml(app.description || t("apps.noDesc"))}</p>
               <div class="app-id-line">
                 <span title="App ID">${escapeHtml(app.appId)}</span>
-                <button type="button" data-copy-app="${escapeHtml(app.appId)}">Copy</button>
+                <button type="button" data-copy-app="${escapeHtml(app.appId)}">${t("apps.copy")}</button>
               </div>
               ${uriHtml}
               </div>
             </div>
             <div class="app-actions">
-              <button type="button" class="btn btn-ghost btn-sm" data-edit="${escapeHtml(app.id)}">Edit</button>
-              <button type="button" class="btn btn-ghost btn-sm" data-rotate="${escapeHtml(app.id)}" ${app.status !== "active" ? "disabled" : ""}>Rotate secret</button>
-              <button type="button" class="btn btn-ghost btn-sm" data-revoke="${escapeHtml(app.id)}" ${app.status !== "active" ? "disabled" : ""}>Revoke</button>
+              <button type="button" class="btn btn-ghost btn-sm" data-edit="${escapeHtml(app.id)}">${t("apps.edit")}</button>
+              <button type="button" class="btn btn-ghost btn-sm" data-rotate="${escapeHtml(app.id)}" ${app.status !== "active" ? "disabled" : ""}>${t("apps.rotate")}</button>
+              <button type="button" class="btn btn-ghost btn-sm" data-revoke="${escapeHtml(app.id)}" ${app.status !== "active" ? "disabled" : ""}>${t("apps.revoke")}</button>
             </div>
           `;
           list.appendChild(row);
@@ -730,7 +804,7 @@
           if (err.status === 401) {
             clearSession();
             show("login");
-            toast("Session expired — sign in again");
+            toast(t("toast.sessionExpired"));
             return;
           }
           toast(err.message || "Failed to load apps");
@@ -742,10 +816,9 @@
 
       function resetAppFormMode() {
         editingAppId = null;
-        $("appFormTitle").textContent = "Register a new app";
-        $("appFormHint").textContent =
-          "Create an App ID, then register redirect URIs for redirect login.";
-        $("appSubmit").textContent = "Create application";
+        $("appFormTitle").textContent = t("apps.formNew");
+        $("appFormHint").textContent = t("apps.formNewHint");
+        $("appSubmit").textContent = t("apps.create");
         $("appCancelEdit").hidden = true;
         $("appIdReadonly").hidden = true;
         $("appEditAppId").textContent = "—";
@@ -756,14 +829,13 @@
       function startEditApp(id) {
         const app = appItems.find((x) => x.id === id);
         if (!app) {
-          toast("App not found");
+          toast(t("toast.appNotFound"));
           return;
         }
         editingAppId = id;
-        $("appFormTitle").textContent = "Edit application";
-        $("appFormHint").textContent =
-          "Update name, description, or redirect URIs. App Secret is not shown here.";
-        $("appSubmit").textContent = "Save changes";
+        $("appFormTitle").textContent = t("apps.formEdit");
+        $("appFormHint").textContent = t("apps.formEditHint");
+        $("appSubmit").textContent = t("apps.save");
         $("appCancelEdit").hidden = false;
         $("appIdReadonly").hidden = false;
         $("appEditAppId").textContent = app.appId;
@@ -780,7 +852,43 @@
       $("appCancelEdit").addEventListener("click", () => {
         $("appForm").reset();
         resetAppFormMode();
-        toast("Edit cancelled");
+        toast(t("toast.editCancelled"));
+      });
+
+      $("uploadAppIconBtn") && $("uploadAppIconBtn").addEventListener("click", () => {
+        if (!editingAppId) {
+          toast(t("toast.uploadIconFirst"));
+          return;
+        }
+        $("uploadAppIconInput") && $("uploadAppIconInput").click();
+      });
+      $("uploadAppIconInput") && $("uploadAppIconInput").addEventListener("change", async (e) => {
+        const file = e.target.files && e.target.files[0];
+        e.target.value = "";
+        if (!file) return;
+        if (!editingAppId) {
+          toast(t("toast.uploadIconFirst"));
+          return;
+        }
+        try {
+          const data = await uploadImageFile(
+            "/apps/" + encodeURIComponent(editingAppId) + "/icon",
+            file
+          );
+          await loadApps();
+          if (data && data.app) {
+            if ($("appIconUrl")) $("appIconUrl").value = "";
+            toast(t("toast.iconUploaded"));
+          }
+        } catch (err) {
+          if (err.status === 401) {
+            clearSession();
+            show("login");
+            toast(t("toast.sessionExpired"));
+          } else {
+            toast(err.message || "Icon upload failed");
+          }
+        }
       });
 
       $("appForm").addEventListener("submit", async (e) => {
@@ -789,7 +897,7 @@
         setFieldErr("appName", "appNameErr", "");
         const name = $("appName").value.trim();
         if (!name) {
-          setFieldErr("appName", "appNameErr", "App name is required");
+          setFieldErr("appName", "appNameErr", t("err.appNameRequired"));
           return;
         }
         const payload = {
@@ -810,7 +918,7 @@
             await loadApps();
             $("appForm").reset();
             resetAppFormMode();
-            toast("Application updated");
+            toast(t("toast.appUpdated"));
             return;
           }
 
@@ -826,12 +934,12 @@
             data.warning || "Copy this App Secret now. It will not be shown again.",
             data.appSecret
           );
-          toast("App ID issued: " + data.app.appId);
+          toast(t("toast.appIdIssued", { id: data.app.appId }));
         } catch (err) {
           if (err.status === 401) {
             clearSession();
             show("login");
-            toast("Session expired — sign in again");
+            toast(t("toast.sessionExpired"));
           } else {
             setBanner("appBanner", err.message || (isEdit ? "Update failed" : "Create failed"));
           }
@@ -845,7 +953,7 @@
         if (!(t instanceof HTMLElement)) return;
         const copyAppId = t.getAttribute("data-copy-app");
         if (copyAppId) {
-          if (await copyText(copyAppId)) toast("App ID copied");
+          if (await copyText(copyAppId)) toast(t("toast.appIdCopied"));
           return;
         }
         const editId = t.getAttribute("data-edit");
@@ -863,12 +971,12 @@
               data.warning || "The previous secret is invalid. Store the new one now.",
               data.appSecret
             );
-            toast("Secret rotated");
+            toast(t("toast.secretRotated"));
           } catch (err) {
             if (err.status === 401) {
               clearSession();
               show("login");
-              toast("Session expired — sign in again");
+              toast(t("toast.sessionExpired"));
             } else {
               toast(err.message || "Rotate failed");
             }
@@ -886,12 +994,12 @@
               resetAppFormMode();
             }
             await loadApps();
-            toast("Application revoked");
+            toast(t("toast.appRevoked"));
           } catch (err) {
             if (err.status === 401) {
               clearSession();
               show("login");
-              toast("Session expired — sign in again");
+              toast(t("toast.sessionExpired"));
             } else {
               toast(err.message || "Revoke failed");
             }
@@ -900,7 +1008,7 @@
       });
 
       $("copySecretBtn").addEventListener("click", async () => {
-        if (await copyText($("secretValue").textContent.trim())) toast("Secret copied");
+        if (await copyText($("secretValue").textContent.trim())) toast(t("toast.secretCopied"));
       });
 
       $("gotoAppsBtn").addEventListener("click", () => {
@@ -928,11 +1036,11 @@
         const password = $("loginPassword").value;
         let ok = true;
         if (!emailRe.test(email)) {
-          setFieldErr("loginEmail", "loginEmailErr", "Email is invalid");
+          setFieldErr("loginEmail", "loginEmailErr", t("err.emailInvalid"));
           ok = false;
         }
         if (!password) {
-          setFieldErr("loginPassword", "loginPasswordErr", "Password is required");
+          setFieldErr("loginPassword", "loginPasswordErr", t("err.passwordRequired"));
           ok = false;
         }
         if (!ok) return;
@@ -978,10 +1086,10 @@
         const password = $("regPassword").value;
         const confirm = $("regConfirm").value;
         let ok = true;
-        if (!emailRe.test(email)) { setFieldErr("regEmail", "regEmailErr", "Email is invalid"); ok = false; }
+        if (!emailRe.test(email)) { setFieldErr("regEmail", "regEmailErr", t("err.emailInvalid")); ok = false; }
         if (!userRe.test(username)) { setFieldErr("regUsername", "regUsernameErr", "3–32 letters, numbers, underscore"); ok = false; }
-        if (password.length < 8) { setFieldErr("regPassword", "regPasswordErr", "Password must be at least 8 characters"); ok = false; }
-        if (confirm !== password) { setFieldErr("regConfirm", "regConfirmErr", "Passwords do not match"); ok = false; }
+        if (password.length < 8) { setFieldErr("regPassword", "regPasswordErr", t("err.passwordMin")); ok = false; }
+        if (confirm !== password) { setFieldErr("regConfirm", "regConfirmErr", t("err.passwordMatch")); ok = false; }
         if (!ok) return;
 
         const btn = $("regSubmit");
@@ -1029,7 +1137,7 @@
         clearSession();
         $("loginForm").reset();
         show("login");
-        toast("Signed out");
+        toast(t("toast.signedOut"));
       });
 
       $("copyIconBtn").addEventListener("click", async () => {
@@ -1038,7 +1146,7 @@
       $("copyApiBtn").addEventListener("click", async () => {
         if (await copyText($("apiBase").textContent.trim())) {
           flashCopied();
-          toast("API Base URL copied");
+          toast(t("toast.apiBaseCopied"));
         }
       });
       $("regenBtn").addEventListener("click", async () => {
@@ -1046,7 +1154,7 @@
           await api("/auth/logout", { method: "POST" });
           clearSession();
           show("login");
-          toast("Session revoked — sign in for a new token");
+          toast(t("toast.sessionRevoked"));
         } catch (err) {
           toast(err.message || "Could not revoke session");
         }
@@ -1101,7 +1209,7 @@
             openApps();
           } else {
             show("login");
-            toast("Sign in to manage applications");
+            toast(t("toast.signInApps"));
           }
         });
       });
@@ -1131,6 +1239,12 @@
           showAuthzBanners();
         }
       }
+      window.onI18nChange = function () {
+        if (store.user) fillProfile(store.user);
+        if (appItems && appItems.length) renderApps();
+        showAuthzBanners();
+      };
+
       boot();
     })();
   

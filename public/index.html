@@ -89,7 +89,39 @@ a:hover { text-decoration: underline; }
 }
 .brand:hover { text-decoration: none; }
 .brand svg { flex-shrink: 0; color: var(--accent); }
-.sidebar-foot { margin-top: auto; padding: 16px 8px 4px; }
+/* Sidebar bottom: sign-out + language, pushed to rail end */
+.sidebar-bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 8px 10px;
+}
+.sidebar-foot { margin: 0; padding: 0; }
+.sidebar-foot[hidden] { display: none; }
+.signout-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.signout-btn:hover {
+  background: var(--surface-2);
+  color: var(--danger);
+}
+.signout-btn svg { flex-shrink: 0; color: currentColor; }
 
 .nav {
   display: flex;
@@ -1160,7 +1192,21 @@ h2 {
   .brand { padding: 8px 12px; }
   .nav { flex-direction: row; margin-top: 0; margin-left: 8px; }
   .nav a { padding: 8px 14px; }
-  .sidebar-foot { margin-top: 0; padding-top: 0; margin-left: auto; padding-right: 8px; }
+    .sidebar-bottom {
+    margin-top: 0;
+    margin-left: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    padding: 0 4px 0 0;
+  }
+  .sidebar-foot { margin: 0; padding: 0; }
+  .signout-btn {
+    width: auto;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .lang-switch { padding: 0; }
   .main {
     padding: 28px 20px 48px;
     max-width: none;
@@ -1189,8 +1235,9 @@ h2 {
 
 
 .lang-switch {
-  margin-top: auto;
-  padding: 12px 8px 0;
+  margin: 0;
+  padding: 4px 8px 0;
+  align-items: center;
   display: flex;
   gap: 6px;
   justify-content: flex-start;
@@ -1236,19 +1283,21 @@ h2 {
           <span data-i18n="nav.apps">Applications</span>
         </a>
       </nav>
-      <div class="sidebar-foot" id="sidebarFoot" hidden>
-        <button type="button" class="btn btn-ghost btn-sm" id="signOutBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M10 6H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4M14 15l3-3-3-3M10 12h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span data-i18n="nav.signOut">Sign out</span>
-        </button>
+      <div class="sidebar-bottom">
+        <div class="sidebar-foot" id="sidebarFoot" hidden>
+          <button type="button" class="nav-item signout-btn" id="signOutBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M10 6H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4M14 15l3-3-3-3M10 12h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span data-i18n="nav.signOut">Sign out</span>
+          </button>
+        </div>
+        <div class="lang-switch" id="langSwitch" role="group" aria-label="Language">
+          <button type="button" data-lang="en" class="on">EN</button>
+          <button type="button" data-lang="zh">中文</button>
+        </div>
       </div>
-      <div class="lang-switch" id="langSwitch" role="group" aria-label="Language">
-        <button type="button" data-lang="en" class="on">EN</button>
-        <button type="button" data-lang="zh">中文</button>
-      </div>
-    </aside>
+      </aside>
 
     <main class="main">
       <!-- Login -->

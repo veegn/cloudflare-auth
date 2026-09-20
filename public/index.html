@@ -711,6 +711,41 @@ h2 {
 }
 .app-row:last-child { border-bottom: none; }
 .app-row.revoked { opacity: 0.55; }
+.app-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+.app-icon.fb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 15px;
+}
+.app-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+.authz-banner .app-mark .app-icon-img,
+.authz-app-mark .app-icon-img {
+  border-radius: inherit;
+}
+.app-meta-with-icon {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.app-meta-with-icon .app-meta-text { min-width: 0; flex: 1; }
 .app-meta h3 {
   margin: 0 0 4px;
   font-size: 15px;
@@ -925,6 +960,116 @@ h2 {
   border-radius: var(--radius-card);
 }
 .profile-edit-panel[hidden] { display: none !important; }
+
+/* Authz confirm — already signed in */
+.authz-confirm {
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  padding: 40px 40px 32px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: var(--shadow-1);
+  text-align: center;
+}
+.authz-confirm h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 400;
+  text-align: center;
+}
+.authz-confirm .lede {
+  margin: 0 0 24px;
+  font-size: 15px;
+  color: var(--ink-2);
+  text-align: center;
+}
+.authz-app-mark {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 12px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 16px;
+}
+.authz-account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+  margin-bottom: 20px;
+}
+.authz-account .avatar,
+.authz-account .avatar-fallback {
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+  border-width: 0;
+  box-shadow: none;
+}
+.authz-account-meta {
+  min-width: 0;
+  flex: 1;
+}
+.authz-account-meta .name {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.authz-account-meta .mail {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.authz-confirm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.authz-confirm-actions .btn-primary {
+  width: 100%;
+  min-height: 44px;
+}
+.authz-confirm-actions .btn-ghost {
+  width: 100%;
+  color: var(--accent);
+}
+.authz-confirm-foot {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.authz-confirm-foot button {
+  border: none;
+  background: none;
+  color: var(--ink-2);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+.authz-confirm-foot button:hover {
+  color: var(--danger);
+  background: var(--danger-bg);
+}
 .profile-head-actions { flex-wrap: wrap; justify-content: flex-end; }
 
 /* AppID flow */
@@ -1160,6 +1305,33 @@ h2 {
         </form>
       </section>
 
+      <!-- Authz confirm: already signed in -->
+      <section class="view auth-wrap" id="view-authz-confirm" aria-labelledby="authzConfirmTitle" style="border:none;box-shadow:none;background:transparent;padding:0;">
+        <div class="authz-confirm">
+          <div class="authz-app-mark" id="authzConfirmMark" aria-hidden="true">A</div>
+          <h1 id="authzConfirmTitle">Continue</h1>
+          <p class="lede" id="authzConfirmLede">You are signed in. Confirm to continue to the application.</p>
+
+          <div class="authz-account">
+            <img class="avatar" id="authzConfirmAvatar" alt="" width="40" height="40" hidden />
+            <div class="avatar-fallback" id="authzConfirmAvatarFb" aria-hidden="true">?</div>
+            <div class="authz-account-meta">
+              <div class="name" id="authzConfirmName">—</div>
+              <div class="mail" id="authzConfirmEmail">—</div>
+            </div>
+          </div>
+
+          <div class="authz-confirm-actions">
+            <button type="button" class="btn btn-primary" id="authzContinueBtn">Continue</button>
+            <button type="button" class="btn btn-ghost" id="authzSwitchBtn">Use another account</button>
+          </div>
+          <div class="authz-confirm-foot">
+            Not you?
+            <button type="button" id="authzSignOutBtn">Sign out</button>
+          </div>
+        </div>
+      </section>
+
       <!-- Profile -->
       <section class="view" id="view-profile" aria-labelledby="profileTitle">
         <div class="main-inner">
@@ -1318,6 +1490,11 @@ h2 {
               <input id="appRedirectUris" name="redirectUris" type="text" placeholder="https://app.example.com/callback" style="font-family:var(--mono);font-size:13px;" />
               <p class="uris-hint">Required for redirect login. Exact match; max 20 URIs.</p>
             </div>
+            <div class="field">
+              <label for="appIconUrl">Icon URL <span style="font-weight:400;color:var(--ink-3)">(optional)</span></label>
+              <input id="appIconUrl" name="iconUrl" type="url" placeholder="https://cdn.example.com/icon.png" style="font-family:var(--mono);font-size:13px;" />
+              <p class="uris-hint">HTTPS image on sign-in / consent. Empty = generated icon.</p>
+            </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-self:flex-start;">
               <button type="submit" class="btn btn-primary" id="appSubmit" style="min-width:160px;">Create application</button>
               <button type="button" class="btn btn-ghost" id="appCancelEdit" hidden>Cancel</button>
@@ -1459,7 +1636,16 @@ h2 {
         </div>
 
         <div class="doc-section">
-          <h3>GET /auth/me</h3>
+          <h3>GET /auth/me · PATCH /auth/me</h3>
+          <p><code>GET</code> returns the current user. <code>PATCH</code> updates profile (email / username / password).</p>
+          <div class="codeblock">PATCH /auth/me
+Authorization: Bearer &lt;token&gt;
+{
+  "email": "new@example.com",
+  "username": "newname",
+  "currentPassword": "old",   // required only when changing password
+  "newPassword": "new-pass-9"
+}</div>
           <p>Header:</p>
           <div class="codeblock">Authorization: Bearer &lt;token&gt;</div>
           <p>Success <code>200</code>:</p>
@@ -1739,13 +1925,15 @@ export async function getMe(userToken) {
 
         <div class="doc-section">
           <h2>Redirect login (take over sign-in)</h2>
+          <p><strong>Already signed in?</strong> The console shows a confirmation card (Continue / Use another account / Sign out) instead of auto-redirecting.</p>
           <p>Use redirect mode when your product wants auth.dayti.de to host login, then bounce the user back to your app. Register <strong>Redirect URIs</strong> on the Applications page first (exact match, one per line).</p>
 
           <h3>Flow</h3>
           <ol>
             <li>Your app redirects the browser to <code>{{SERVICE_URL}}/?client_id=…&amp;redirect_uri=…&amp;state=…&amp;response_type=code</code></li>
             <li>User signs in (or creates an account) on this console</li>
-            <li>Console calls <code>POST /auth/authorize</code> and navigates to your <code>redirect_uri</code></li>
+            <li>If the user is already signed in, they see a <strong>confirmation screen</strong>: Continue / Use another account / Sign out</li>
+            <li>After confirm or a fresh sign-in, console calls <code>POST /auth/authorize</code> and navigates to your <code>redirect_uri</code></li>
             <li>Your backend exchanges the one-time code with App Secret via <code>POST /auth/token</code></li>
           </ol>
 
@@ -1959,1000 +2147,6 @@ npm run dev
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script>
-    (function () {
-      const API_BASE = "";
-      const $ = (id) => document.getElementById(id);
-      const views = {
-        login: $("view-login"),
-        register: $("view-register"),
-        profile: $("view-profile"),
-        apps: $("view-apps"),
-        docs: $("view-docs"),
-        "docs-dev": $("view-docs-dev"),
-        "docs-user": $("view-docs-user"),
-      };
-      const sidebarFoot = $("sidebarFoot");
-      const navAuth = $("navAuth");
-      const navDocs = $("navDocs");
-      const navApps = $("navApps");
-      let appItems = [];
-      let sessionExpiresIn = 86400;
-
-      const store = {
-        get token() { return localStorage.getItem("cfa_token"); },
-        set token(v) { v ? localStorage.setItem("cfa_token", v) : localStorage.removeItem("cfa_token"); },
-        get user() {
-          try { return JSON.parse(localStorage.getItem("cfa_user") || "null"); }
-          catch { return null; }
-        },
-        set user(v) { v ? localStorage.setItem("cfa_user", JSON.stringify(v)) : localStorage.removeItem("cfa_user"); },
-      };
-
-      function authHeaders() {
-        const t = store.token;
-        return t ? { Authorization: "Bearer " + t } : {};
-      }
-
-      async function api(path, options) {
-        const opts = Object.assign({ headers: {} }, options || {});
-        const headers = Object.assign(
-          { "content-type": "application/json" },
-          opts.headers,
-          authHeaders()
-        );
-        const res = await fetch(API_BASE + path, Object.assign({}, opts, { headers }));
-        let data = null;
-        try { data = await res.json(); } catch { data = null; }
-        if (!res.ok) {
-          const err = new Error((data && data.message) || res.statusText || "Request failed");
-          err.status = res.status;
-          err.code = data && data.error;
-          throw err;
-        }
-        return data;
-      }
-
-      function setNav(active) {
-        navAuth.classList.toggle("on", active === "auth");
-        navDocs.classList.toggle("on", active === "docs");
-        navApps.classList.toggle("on", active === "apps");
-      }
-
-      function setAuthChrome(signedIn) {
-        navApps.hidden = !signedIn;
-        sidebarFoot.hidden = true;
-      }
-
-      function show(name) {
-        Object.entries(views).forEach(([k, el]) => el.classList.toggle("on", k === name));
-        const signedIn = !!(store.token && store.user);
-        setAuthChrome(signedIn);
-        sidebarFoot.hidden = name !== "profile" && name !== "apps";
-        const mainEl = document.querySelector(".main");
-        if (mainEl) {
-          mainEl.classList.toggle("auth-mode", name === "login" || name === "register");
-        }
-        if (name === "docs" || name === "docs-dev" || name === "docs-user") {
-          setNav("docs");
-        } else if (name === "apps") {
-          setNav("apps");
-        } else {
-          setNav("auth");
-        }
-        if (name !== "profile") {
-          const panel = $("profileEditPanel");
-          if (panel) panel.hidden = true;
-        }
-        window.scrollTo(0, 0);
-      }
-
-      function toast(msg) {
-        const el = $("toast");
-        el.textContent = msg;
-        el.classList.add("on");
-        clearTimeout(toast._t);
-        toast._t = setTimeout(() => el.classList.remove("on"), 2500);
-      }
-
-      function setBanner(id, msg) {
-        const el = $(id);
-        el.textContent = msg || "";
-        el.classList.toggle("on", !!msg);
-      }
-
-      function setFieldErr(inputId, errId, msg) {
-        const input = $(inputId);
-        const err = $(errId);
-        input.setAttribute("aria-invalid", msg ? "true" : "false");
-        err.textContent = msg || "";
-      }
-
-      function setLoading(btn, loading, label) {
-        if (loading) {
-          btn.disabled = true;
-          btn.dataset.label = btn.textContent;
-          btn.innerHTML = '<span class="spinner" aria-hidden="true"></span> ' + (label || "Working…");
-        } else {
-          btn.disabled = false;
-          btn.textContent = btn.dataset.label || label || "Submit";
-        }
-      }
-
-      function fillProfile(user) {
-        $("pfEmail").textContent = user.email;
-        $("pfUsername").textContent = user.username;
-        $("pfCreated").textContent = user.createdAt || user.created_at || "—";
-        $("pfId").textContent = user.id;
-        renderAvatar(user);
-        const hours = Math.round((sessionExpiresIn || 86400) / 3600);
-        const label = hours >= 24 ? Math.round(hours / 24) + "d" : hours + "h";
-        const pill = document.querySelector("#view-profile .pill");
-        if (pill) pill.innerHTML = '<span class="dot" aria-hidden="true"></span>Active · Expires in ' + label;
-        const exp = new Date(Date.now() + (sessionExpiresIn || 86400) * 1000);
-        $("pfExpiry").textContent = "This session will expire at " + exp.toISOString().replace(/\.\d{3}Z$/, "Z") + ".";
-        const origin = location.origin;
-        $("apiBase").textContent = origin;
-      }
-
-      function avatarSrc(user) {
-        if (!user) return "";
-        if (user.avatarUrl) {
-          return user.avatarUrl.startsWith("http")
-            ? user.avatarUrl
-            : location.origin + user.avatarUrl;
-        }
-        return location.origin + "/users/" + encodeURIComponent(user.id) + "/avatar";
-      }
-
-      function renderAvatar(user) {
-        const img = $("pfAvatar");
-        const fb = $("pfAvatarFallback");
-        if (!img || !fb) return;
-        const name = (user && (user.username || user.email)) || "?";
-        fb.textContent = String(name).charAt(0).toUpperCase();
-
-        const src = avatarSrc(user);
-        // 默认只显示字母回退，图片加载成功后再切换
-        img.hidden = true;
-        fb.hidden = false;
-        img.removeAttribute("src");
-        img.onload = null;
-        img.onerror = null;
-
-        if (!src) return;
-
-        img.alt = name + " avatar";
-        img.onload = () => {
-          img.hidden = false;
-          fb.hidden = true;
-        };
-        img.onerror = () => {
-          img.hidden = true;
-          fb.hidden = false;
-        };
-        img.src = src;
-        // 缓存命中时 complete 可能已为 true，不会再次触发 onload
-        if (img.complete && img.naturalWidth > 0) {
-          img.hidden = false;
-          fb.hidden = true;
-        }
-      }
-
-      $("refreshAvatarBtn") && $("refreshAvatarBtn").addEventListener("click", async () => {
-        try {
-          const data = await api("/auth/avatar/refresh", { method: "POST" });
-          store.user = data.user;
-          renderAvatar(data.user);
-          toast("New avatar generated");
-        } catch (err) {
-          if (err.status === 401) {
-            clearSession();
-            show("login");
-            toast("Session expired — sign in again");
-          } else {
-            toast(err.message || "Could not refresh avatar");
-          }
-        }
-      });
-
-      /* —— Edit basic account info —— */
-      function openProfileEdit() {
-        const user = store.user || {};
-        $("editEmail").value = user.email || "";
-        $("editUsername").value = user.username || "";
-        $("editCurrentPassword").value = "";
-        $("editNewPassword").value = "";
-        setBanner("profileEditBanner", "");
-        ["editEmail|editEmailErr", "editUsername|editUsernameErr", "editNewPassword|editNewPasswordErr"]
-          .forEach((pair) => {
-            const [i, er] = pair.split("|");
-            setFieldErr(i, er, "");
-          });
-        $("profileEditPanel").hidden = false;
-        $("profileEditPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
-        $("editEmail").focus();
-      }
-
-      function closeProfileEdit() {
-        $("profileEditPanel").hidden = true;
-        setBanner("profileEditBanner", "");
-      }
-
-      $("editProfileBtn") && $("editProfileBtn").addEventListener("click", () => {
-        if ($("profileEditPanel").hidden) openProfileEdit();
-        else closeProfileEdit();
-      });
-      $("profileEditCancel") && $("profileEditCancel").addEventListener("click", () => {
-        closeProfileEdit();
-      });
-
-      $("profileEditForm") && $("profileEditForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        setBanner("profileEditBanner", "");
-        ["editEmail|editEmailErr", "editUsername|editUsernameErr", "editNewPassword|editNewPasswordErr"]
-          .forEach((pair) => {
-            const [i, er] = pair.split("|");
-            setFieldErr(i, er, "");
-          });
-
-        const email = $("editEmail").value.trim().toLowerCase();
-        const username = $("editUsername").value.trim();
-        const currentPassword = $("editCurrentPassword").value;
-        const newPassword = $("editNewPassword").value;
-
-        let ok = true;
-        if (!emailRe.test(email)) {
-          setFieldErr("editEmail", "editEmailErr", "Email is invalid");
-          ok = false;
-        }
-        if (!userRe.test(username)) {
-          setFieldErr("editUsername", "editUsernameErr", "3–32 letters, numbers, underscore");
-          ok = false;
-        }
-        if (newPassword && newPassword.length < 8) {
-          setFieldErr("editNewPassword", "editNewPasswordErr", "Password must be at least 8 characters");
-          ok = false;
-        }
-        if (newPassword && !currentPassword) {
-          setBanner("profileEditBanner", "Enter current password to change password");
-          ok = false;
-        }
-        if (!ok) return;
-
-        const payload = { email, username };
-        if (newPassword) {
-          payload.currentPassword = currentPassword;
-          payload.newPassword = newPassword;
-        }
-
-        const btn = $("profileEditSubmit");
-        setLoading(btn, true, "Saving…");
-        try {
-          const data = await api("/auth/me", {
-            method: "PATCH",
-            body: JSON.stringify(payload),
-          });
-          store.user = data.user;
-          fillProfile(data.user);
-          closeProfileEdit();
-          toast("Profile updated");
-        } catch (err) {
-          if (err.status === 401) {
-            setBanner("profileEditBanner", err.message || "Current password is incorrect");
-          } else if (err.status === 409) {
-            setBanner("profileEditBanner", err.message || "Already taken");
-          } else {
-            setBanner("profileEditBanner", err.message || "Update failed");
-          }
-        } finally {
-          setLoading(btn, false, "Save changes");
-        }
-      });
-
-      function goProfile(user) {
-        fillProfile(user);
-        show("profile");
-      }
-
-      function clearSession() {
-        store.token = null;
-        store.user = null;
-        appItems = [];
-        hideSecretBanner();
-      }
-
-      async function copyText(text) {
-        try {
-          await navigator.clipboard.writeText(text);
-          return true;
-        } catch {
-          const ta = document.createElement("textarea");
-          ta.value = text;
-          document.body.appendChild(ta);
-          ta.select();
-          const ok = document.execCommand("copy");
-          ta.remove();
-          return ok;
-        }
-      }
-
-      async function flashCopied() {
-        const flag = $("copiedFlag");
-        flag.classList.add("on");
-        clearTimeout(flashCopied._t);
-        flashCopied._t = setTimeout(() => flag.classList.remove("on"), 1500);
-      }
-
-      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const userRe = /^[a-zA-Z0-9_]{3,32}$/;
-
-      function showSecretOnce(title, message, secret) {
-        $("secretBannerTitle").textContent = title;
-        $("secretBannerMsg").textContent = message;
-        $("secretValue").textContent = secret;
-        $("secretBanner").classList.add("on");
-      }
-
-      function hideSecretBanner() {
-        $("secretBanner").classList.remove("on");
-      }
-
-      /* —— Redirect login (authorize) context —— */
-      const authz = {
-        clientId: "",
-        redirectUri: "",
-        state: "",
-        responseType: "code",
-        appName: "",
-        appDescription: "",
-        error: "",
-      };
-
-      function parseAuthorizeQuery() {
-        const q = new URLSearchParams(location.search);
-        authz.clientId = (q.get("client_id") || q.get("app_id") || "").trim();
-        authz.redirectUri = (q.get("redirect_uri") || "").trim();
-        authz.state = q.get("state") || "";
-        authz.responseType = (q.get("response_type") || "code").toLowerCase();
-        authz.appName = "";
-        authz.appDescription = "";
-        authz.error = "";
-      }
-
-      function hasAuthzContext() {
-        return !!(authz.clientId && authz.redirectUri);
-      }
-
-      function fillAuthzCard(ids, opts) {
-        const box = $(ids.box);
-        if (!box) return;
-        const eyebrow = $(ids.eyebrow);
-        const mark = $(ids.mark);
-        const title = $(ids.title);
-        const desc = $(ids.desc);
-        const meta = $(ids.meta);
-
-        if (opts.error) {
-          box.classList.add("on", "err");
-          if (eyebrow) eyebrow.textContent = "Authorization error";
-          if (mark) mark.textContent = "!";
-          if (title) title.textContent = "Sign-in unavailable";
-          if (desc) desc.textContent = "";
-          if (meta) meta.textContent = opts.error;
-          return;
-        }
-
-        box.classList.add("on");
-        box.classList.remove("err");
-        const name = opts.name || "Application";
-        if (eyebrow) eyebrow.textContent = "Requesting sign-in";
-        if (mark) mark.textContent = String(name).charAt(0).toUpperCase() || "A";
-        if (title) title.textContent = name;
-        if (desc) {
-          desc.textContent = opts.description || "";
-          desc.hidden = !opts.description;
-        }
-        if (meta) {
-          meta.innerHTML = opts.redirectUri
-            ? "After sign-in, return to <code>" + escapeHtml(opts.redirectUri) + "</code>"
-            : "";
-        }
-      }
-
-      const brandEl = document.querySelector(".brand span");
-      const UI_APP_NAME = (brandEl && brandEl.textContent.trim()) || "cloudflare-auth";
-
-      function showAuthzBanners() {
-        const shared = hasAuthzContext()
-          ? {
-              name: authz.appName,
-              description: authz.appDescription,
-              redirectUri: authz.redirectUri,
-              error: authz.error || "",
-            }
-          : null;
-
-        const loginLede = $("loginLede");
-        const regLede = $("regLede");
-
-        if (!shared) {
-          ["authzBanner", "authzBannerReg"].forEach((id) => {
-            const box = $(id);
-            if (box) box.classList.remove("on", "err");
-          });
-          if (loginLede) loginLede.textContent = "Use your " + UI_APP_NAME + " account";
-          if (regLede) regLede.textContent = "Continue to " + UI_APP_NAME;
-          return;
-        }
-
-        fillAuthzCard(
-          {
-            box: "authzBanner",
-            eyebrow: "authzEyebrow",
-            mark: "authzMark",
-            title: "authzTitle",
-            desc: "authzDesc",
-            meta: "authzMeta",
-          },
-          shared
-        );
-        fillAuthzCard(
-          {
-            box: "authzBannerReg",
-            eyebrow: "authzEyebrowReg",
-            mark: "authzMarkReg",
-            title: "authzTitleReg",
-            desc: "authzDescReg",
-            meta: "authzMetaReg",
-          },
-          shared
-        );
-
-        if (!shared.error && authz.appName) {
-          if (loginLede) loginLede.textContent = "Sign in to continue to " + authz.appName;
-          if (regLede) regLede.textContent = "Create an account for " + authz.appName;
-        } else {
-          if (loginLede) loginLede.textContent = "Use your " + UI_APP_NAME + " account";
-          if (regLede) regLede.textContent = "Continue to " + UI_APP_NAME;
-        }
-      }
-
-      async function loadAuthorizeContext() {
-        parseAuthorizeQuery();
-        if (!hasAuthzContext()) {
-          showAuthzBanners();
-          return false;
-        }
-        try {
-          const data = await api(
-            "/authorize?" +
-              new URLSearchParams({
-                client_id: authz.clientId,
-                redirect_uri: authz.redirectUri,
-                state: authz.state,
-                response_type: authz.responseType,
-              }).toString()
-          );
-          if (!data.ok) {
-            authz.error = data.message || "Invalid authorize request";
-            authz.appName = "";
-            authz.appDescription = "";
-            showAuthzBanners();
-            return false;
-          }
-          authz.appName = (data.app && data.app.name) || "";
-          authz.appDescription = (data.app && data.app.description) || "";
-          authz.error = "";
-          showAuthzBanners();
-          return true;
-        } catch (err) {
-          authz.error = err.message || "Invalid authorize request";
-          authz.appName = "";
-          authz.appDescription = "";
-          showAuthzBanners();
-          return false;
-        }
-      }
-
-      async function tryCompleteAuthorize() {
-        if (!hasAuthzContext() || authz.error) return false;
-        try {
-          const data = await api("/auth/authorize", {
-            method: "POST",
-            body: JSON.stringify({
-              client_id: authz.clientId,
-              redirect_uri: authz.redirectUri,
-              state: authz.state,
-              response_type: authz.responseType,
-            }),
-          });
-          if (data && data.redirectTo) {
-            toast(
-              authz.appName
-                ? "Redirecting to " + authz.appName + "..."
-                : "Redirecting..."
-            );
-            setTimeout(() => {
-              window.location.assign(data.redirectTo);
-            }, 300);
-            return true;
-          }
-        } catch (err) {
-          setBanner("loginBanner", err.message || "Authorization failed");
-          setBanner("regBanner", err.message || "Authorization failed");
-        }
-        return false;
-      }
-
-      function parseRedirectUrisInput(raw) {
-        return String(raw || "")
-          .split(/[\n,]+/)
-          .map((s) => s.trim())
-          .filter(Boolean);
-      }
-
-      function renderApps() {
-        const list = $("appList");
-        const empty = $("appsEmpty");
-        const items = appItems;
-        list.innerHTML = "";
-        empty.hidden = items.length > 0;
-        items.forEach((app) => {
-          const uris = Array.isArray(app.redirectUris) ? app.redirectUris : [];
-          const uriHtml = uris.length
-            ? '<div class="app-id-line" style="margin-top:6px;"><span title="Redirect URIs">' +
-              escapeHtml(uris.join(" · ")) +
-              "</span></div>"
-            : "";
-          const row = document.createElement("div");
-          row.className = "app-row" + (app.status === "revoked" ? " revoked" : "");
-          row.innerHTML = `
-            <div class="app-meta">
-              <h3>${escapeHtml(app.name)}
-                <span class="status-chip${app.status === "revoked" ? " revoked" : ""}">
-                  <span class="dot" aria-hidden="true"></span>${app.status === "active" ? "Active" : "Revoked"}
-                </span>
-              </h3>
-              <p>${escapeHtml(app.description || "No description")}</p>
-              <div class="app-id-line">
-                <span title="App ID">${escapeHtml(app.appId)}</span>
-                <button type="button" data-copy-app="${escapeHtml(app.appId)}">Copy</button>
-              </div>
-              ${uriHtml}
-            </div>
-            <div class="app-actions">
-              <button type="button" class="btn btn-ghost btn-sm" data-edit="${escapeHtml(app.id)}">Edit</button>
-              <button type="button" class="btn btn-ghost btn-sm" data-rotate="${escapeHtml(app.id)}" ${app.status !== "active" ? "disabled" : ""}>Rotate secret</button>
-              <button type="button" class="btn btn-ghost btn-sm" data-revoke="${escapeHtml(app.id)}" ${app.status !== "active" ? "disabled" : ""}>Revoke</button>
-            </div>
-          `;
-          list.appendChild(row);
-        });
-      }
-
-      function escapeHtml(s) {
-        return String(s)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
-
-      async function loadApps() {
-        const data = await api("/apps");
-        appItems = data.apps || [];
-        renderApps();
-      }
-
-      async function openApps() {
-        hideSecretBanner();
-        resetAppFormMode();
-        show("apps");
-        try {
-          await loadApps();
-        } catch (err) {
-          if (err.status === 401) {
-            clearSession();
-            show("login");
-            toast("Session expired — sign in again");
-            return;
-          }
-          toast(err.message || "Failed to load apps");
-        }
-      }
-
-      /* —— App create / edit form mode —— */
-      let editingAppId = null;
-
-      function resetAppFormMode() {
-        editingAppId = null;
-        $("appFormTitle").textContent = "Register a new app";
-        $("appFormHint").textContent =
-          "Create an App ID, then register redirect URIs for redirect login.";
-        $("appSubmit").textContent = "Create application";
-        $("appCancelEdit").hidden = true;
-        $("appIdReadonly").hidden = true;
-        $("appEditAppId").textContent = "—";
-        setBanner("appBanner", "");
-        setFieldErr("appName", "appNameErr", "");
-      }
-
-      function startEditApp(id) {
-        const app = appItems.find((x) => x.id === id);
-        if (!app) {
-          toast("App not found");
-          return;
-        }
-        editingAppId = id;
-        $("appFormTitle").textContent = "Edit application";
-        $("appFormHint").textContent =
-          "Update name, description, or redirect URIs. App Secret is not shown here.";
-        $("appSubmit").textContent = "Save changes";
-        $("appCancelEdit").hidden = false;
-        $("appIdReadonly").hidden = false;
-        $("appEditAppId").textContent = app.appId;
-        $("appName").value = app.name || "";
-        $("appDesc").value = app.description || "";
-        $("appRedirectUris").value = (app.redirectUris || []).join("\n");
-        setBanner("appBanner", "");
-        setFieldErr("appName", "appNameErr", "");
-        $("appForm").scrollIntoView({ behavior: "smooth", block: "start" });
-        $("appName").focus();
-      }
-
-      $("appCancelEdit").addEventListener("click", () => {
-        $("appForm").reset();
-        resetAppFormMode();
-        toast("Edit cancelled");
-      });
-
-      $("appForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        setBanner("appBanner", "");
-        setFieldErr("appName", "appNameErr", "");
-        const name = $("appName").value.trim();
-        if (!name) {
-          setFieldErr("appName", "appNameErr", "App name is required");
-          return;
-        }
-        const payload = {
-          name,
-          description: $("appDesc").value.trim(),
-          redirectUris: parseRedirectUrisInput($("appRedirectUris").value),
-        };
-        const btn = $("appSubmit");
-        const isEdit = !!editingAppId;
-        setLoading(btn, true, isEdit ? "Saving…" : "Creating…");
-        try {
-          if (isEdit) {
-            const data = await api("/apps/" + encodeURIComponent(editingAppId), {
-              method: "PUT",
-              body: JSON.stringify(payload),
-            });
-            await loadApps();
-            $("appForm").reset();
-            resetAppFormMode();
-            toast("Application updated");
-            return;
-          }
-
-          const data = await api("/apps", {
-            method: "POST",
-            body: JSON.stringify(payload),
-          });
-          $("appForm").reset();
-          resetAppFormMode();
-          await loadApps();
-          showSecretOnce(
-            "Application created",
-            data.warning || "Copy this App Secret now. It will not be shown again.",
-            data.appSecret
-          );
-          toast("App ID issued: " + data.app.appId);
-        } catch (err) {
-          if (err.status === 401) {
-            clearSession();
-            show("login");
-            toast("Session expired — sign in again");
-          } else {
-            setBanner("appBanner", err.message || (isEdit ? "Update failed" : "Create failed"));
-          }
-        } finally {
-          setLoading(btn, false, isEdit ? "Save changes" : "Create application");
-        }
-      });
-
-      $("appList").addEventListener("click", async (e) => {
-        const t = e.target;
-        if (!(t instanceof HTMLElement)) return;
-        const copyAppId = t.getAttribute("data-copy-app");
-        if (copyAppId) {
-          if (await copyText(copyAppId)) toast("App ID copied");
-          return;
-        }
-        const editId = t.getAttribute("data-edit");
-        if (editId) {
-          startEditApp(editId);
-          return;
-        }
-        const rotateId = t.getAttribute("data-rotate");
-        if (rotateId) {
-          try {
-            const data = await api("/apps/" + encodeURIComponent(rotateId) + "/rotate-secret", { method: "POST" });
-            await loadApps();
-            showSecretOnce(
-              "Secret rotated",
-              data.warning || "The previous secret is invalid. Store the new one now.",
-              data.appSecret
-            );
-            toast("Secret rotated");
-          } catch (err) {
-            if (err.status === 401) {
-              clearSession();
-              show("login");
-              toast("Session expired — sign in again");
-            } else {
-              toast(err.message || "Rotate failed");
-            }
-          }
-          return;
-        }
-        const revokeId = t.getAttribute("data-revoke");
-        if (revokeId) {
-          if (!confirm("Revoke this application? Integrations using its App ID will stop working.")) return;
-          try {
-            await api("/apps/" + encodeURIComponent(revokeId) + "/revoke", { method: "POST" });
-            hideSecretBanner();
-            if (editingAppId === revokeId) {
-              $("appForm").reset();
-              resetAppFormMode();
-            }
-            await loadApps();
-            toast("Application revoked");
-          } catch (err) {
-            if (err.status === 401) {
-              clearSession();
-              show("login");
-              toast("Session expired — sign in again");
-            } else {
-              toast(err.message || "Revoke failed");
-            }
-          }
-        }
-      });
-
-      $("copySecretBtn").addEventListener("click", async () => {
-        if (await copyText($("secretValue").textContent.trim())) toast("Secret copied");
-      });
-
-      $("gotoAppsBtn").addEventListener("click", () => {
-        openApps();
-      });
-
-      $("navApps").addEventListener("click", (e) => {
-        e.preventDefault();
-        if (!(store.token && store.user)) {
-          show("login");
-          return;
-        }
-        openApps();
-      });
-
-      /* 鈥斺€?Login form 鈥斺€?*/
-      $("loginForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        setBanner("loginBanner", "");
-        setFieldErr("loginEmail", "loginEmailErr", "");
-        setFieldErr("loginPassword", "loginPasswordErr", "");
-
-        const email = $("loginEmail").value.trim().toLowerCase();
-        const password = $("loginPassword").value;
-        let ok = true;
-        if (!emailRe.test(email)) {
-          setFieldErr("loginEmail", "loginEmailErr", "Email is invalid");
-          ok = false;
-        }
-        if (!password) {
-          setFieldErr("loginPassword", "loginPasswordErr", "Password is required");
-          ok = false;
-        }
-        if (!ok) return;
-
-        const btn = $("loginSubmit");
-        setLoading(btn, true, "Signing in…");
-        try {
-          const res = await api("/auth/login", {
-            method: "POST",
-            body: JSON.stringify({ email, password }),
-          });
-          sessionExpiresIn = res.expiresIn || 86400;
-          store.token = res.token;
-          store.user = res.user;
-          if (hasAuthzContext()) {
-            const redirected = await tryCompleteAuthorize();
-            if (redirected) {
-              setLoading(btn, false, "Sign in");
-              return;
-            }
-          }
-          goProfile(res.user);
-        } catch (err) {
-          setBanner("loginBanner", err.message || "Sign in failed");
-          $("loginPassword").focus();
-        } finally {
-          setLoading(btn, false, "Sign in");
-        }
-      });
-
-      /* 鈥斺€?Register form 鈥斺€?*/
-      $("registerForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        setBanner("regBanner", "");
-        ["regEmail|regEmailErr", "regUsername|regUsernameErr", "regPassword|regPasswordErr", "regConfirm|regConfirmErr"]
-          .forEach((pair) => {
-            const [i, er] = pair.split("|");
-            setFieldErr(i, er, "");
-          });
-
-        const email = $("regEmail").value.trim().toLowerCase();
-        const username = $("regUsername").value.trim();
-        const password = $("regPassword").value;
-        const confirm = $("regConfirm").value;
-        let ok = true;
-        if (!emailRe.test(email)) { setFieldErr("regEmail", "regEmailErr", "Email is invalid"); ok = false; }
-        if (!userRe.test(username)) { setFieldErr("regUsername", "regUsernameErr", "3–32 letters, numbers, underscore"); ok = false; }
-        if (password.length < 8) { setFieldErr("regPassword", "regPasswordErr", "Password must be at least 8 characters"); ok = false; }
-        if (confirm !== password) { setFieldErr("regConfirm", "regConfirmErr", "Passwords do not match"); ok = false; }
-        if (!ok) return;
-
-        const btn = $("regSubmit");
-        setLoading(btn, true, "Creating…");
-        try {
-          const res = await api("/auth/register", {
-            method: "POST",
-            body: JSON.stringify({ email, username, password }),
-          });
-          sessionExpiresIn = res.expiresIn || 86400;
-          store.token = res.token;
-          store.user = res.user;
-          if (hasAuthzContext()) {
-            const redirected = await tryCompleteAuthorize();
-            if (redirected) {
-              setLoading(btn, false, "Create account");
-              return;
-            }
-          }
-          goProfile(res.user);
-        } catch (err) {
-          setBanner("regBanner", err.message || "Registration failed");
-        } finally {
-          setLoading(btn, false, "Create account");
-        }
-      });
-
-      $("toRegister").addEventListener("click", (e) => {
-        e.preventDefault();
-        setBanner("loginBanner", "");
-        const email = $("loginEmail").value.trim();
-        if (email) $("regEmail").value = email;
-        show("register");
-      });
-      $("toLogin").addEventListener("click", (e) => {
-        e.preventDefault();
-        setBanner("regBanner", "");
-        show("login");
-      });
-
-      $("signOutBtn").addEventListener("click", async () => {
-        try {
-          if (store.token) await api("/auth/logout", { method: "POST" });
-        } catch { /* ignore */ }
-        clearSession();
-        $("loginForm").reset();
-        show("login");
-        toast("Signed out");
-      });
-
-      $("copyIconBtn").addEventListener("click", async () => {
-        if (await copyText($("apiBase").textContent.trim())) flashCopied();
-      });
-      $("copyApiBtn").addEventListener("click", async () => {
-        if (await copyText($("apiBase").textContent.trim())) {
-          flashCopied();
-          toast("API Base URL copied");
-        }
-      });
-      $("regenBtn").addEventListener("click", async () => {
-        try {
-          await api("/auth/logout", { method: "POST" });
-          clearSession();
-          show("login");
-          toast("Session revoked — sign in for a new token");
-        } catch (err) {
-          toast(err.message || "Could not revoke session");
-        }
-      });
-
-      $("brandLink").addEventListener("click", (e) => {
-        e.preventDefault();
-        if (store.token && store.user) goProfile(store.user);
-        else show("login");
-      });
-
-      /* 鈥斺€?Docs navigation 鈥斺€?*/
-      navAuth.addEventListener("click", (e) => {
-        e.preventDefault();
-        if (store.token && store.user) goProfile(store.user);
-        else show("login");
-      });
-      navDocs.addEventListener("click", (e) => {
-        e.preventDefault();
-        show("docs");
-      });
-      $("cardDocsDev").addEventListener("click", (e) => {
-        e.preventDefault();
-        show("docs-dev");
-      });
-      $("cardDocsUser").addEventListener("click", (e) => {
-        e.preventDefault();
-        show("docs-user");
-      });
-      document.querySelectorAll(".js-docs").forEach((el) => {
-        el.addEventListener("click", (e) => {
-          e.preventDefault();
-          show("docs");
-        });
-      });
-      document.querySelectorAll(".js-docs-dev").forEach((el) => {
-        el.addEventListener("click", (e) => {
-          e.preventDefault();
-          show("docs-dev");
-        });
-      });
-      document.querySelectorAll(".js-docs-user").forEach((el) => {
-        el.addEventListener("click", (e) => {
-          e.preventDefault();
-          show("docs-user");
-        });
-      });
-      document.querySelectorAll(".js-apps").forEach((el) => {
-        el.addEventListener("click", (e) => {
-          e.preventDefault();
-          if (store.token && store.user) {
-            openApps();
-          } else {
-            show("login");
-            toast("Sign in to manage applications");
-          }
-        });
-      });
-
-      /* Boot: restore session via /auth/me */
-      async function boot() {
-        $("apiBase").textContent = location.origin;
-        await loadAuthorizeContext();
-        if (!store.token) {
-          show("login");
-          showAuthzBanners();
-          return;
-        }
-        try {
-          const data = await api("/auth/me");
-          store.user = data.user;
-          if (hasAuthzContext()) {
-            const redirected = await tryCompleteAuthorize();
-            if (redirected) return;
-          }
-          goProfile(data.user);
-        } catch {
-          clearSession();
-          show("login");
-          showAuthzBanners();
-        }
-      }
-      boot();
-    })();
-  </script>
+  <script src="/console.js"></script>
 </body>
 </html>

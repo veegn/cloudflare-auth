@@ -1,11 +1,22 @@
 //! cloudflare-auth — Rust Worker (workers-rs)
+//!
+//! 模块职责：
+//! - `router`：路由表
+//! - `handlers`：各领域 HTTP 处理
+//! - `http` / `db` / `session` / `time` / `validate`：横切支撑
+//! - `password` / `config` / `avatar` / `authorize`：密码与授权流
 
 mod avatar;
 mod authorize;
 mod config;
+mod db;
+mod handlers;
+mod http;
 mod password;
 mod router;
-mod util;
+mod session;
+mod time;
+mod validate;
 
 use worker::*;
 

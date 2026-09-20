@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS apps (
   owner_id TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'active',
   redirect_uris TEXT NOT NULL DEFAULT '[]',
+  icon_url TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now')),
   secret_rotated_at TEXT,

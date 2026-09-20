@@ -1,5 +1,13 @@
-use crate::password::{random_hex, sign_token, verify_password};
-use crate::util::*;
+//! OAuth-like 授权流：inspect / complete / code exchange
+//!
+//! 会话创建见 `session.rs`；时间工具见 `time.rs`。
+
+use crate::db::{js_str, db_first, load_user, public_user, AppRow, AuthCodeRow, UserRow};
+use crate::http::{api_err, json_err, ok_json, ApiResult};
+use crate::password::{random_hex, verify_password};
+use crate::session::create_session;
+use crate::time::{format_unix_iso, now_ts, parse_iso_pub};
+use crate::validate::parse_redirect_uris;
 
 const CODE_TTL_SECS: i64 = 300;
 
@@ -9,6 +17,30 @@ pub struct AuthorizeQuery {
     pub redirect_uri: Option<String>,
     pub state: Option<String>,
     pub response_type: Option<String>,
+}
+
+/// 从 URL query 构造 AuthorizeQuery（兼容 `app_id` → `client_id`）
+pub fn query_from_url(url: &worker::Url) -> AuthorizeQuery {
+    let mut map = std::collections::HashMap::new();
+    if let Some(q) = url.query() {
+        for pair in q.split('&') {
+            if let Some((k, v)) = pair.split_once('=') {
+                map.insert(
+                    crate::http::url_decode(k),
+                    crate::http::url_decode(v),
+                );
+            }
+        }
+    }
+    AuthorizeQuery {
+        client_id: map
+            .get("client_id")
+            .cloned()
+            .or_else(|| map.get("app_id").cloned()),
+        redirect_uri: map.get("redirect_uri").cloned(),
+        state: map.get("state").cloned(),
+        response_type: map.get("response_type").cloned(),
+    }
 }
 
 fn normalize_uri(uri: &str) -> String {
@@ -47,6 +79,7 @@ fn redirect_allowed(app: &AppRow, redirect_uri: &str) -> bool {
         .any(|u| u == redirect_uri)
 }
 
+/// GET /authorize：参数校验 + 应用元信息（给控制台确认页用）
 pub async fn inspect_authorize(
     env: &worker::Env,
     query: AuthorizeQuery,
@@ -54,40 +87,43 @@ pub async fn inspect_authorize(
     let client_id = query.client_id.unwrap_or_default().trim().to_string();
     let redirect_uri = normalize_uri(query.redirect_uri.as_deref().unwrap_or(""));
     if client_id.is_empty() {
-        return crate::util::json_err(400, "invalid_request", "client_id is required");
+        return json_err(400, "invalid_request", "client_id is required");
     }
     if redirect_uri.is_empty() {
-        return crate::util::json_err(400, "invalid_request", "redirect_uri is required");
+        return json_err(400, "invalid_request", "redirect_uri is required");
     }
     let rt = match parse_rt(query.response_type.as_deref()) {
         Ok(v) => v,
-        Err((s, c, m)) => return crate::util::json_err(s, c, &m),
+        Err(e) => return json_err(e.status, e.code, &e.message),
     };
     let app = match load_active_app(env, &client_id).await {
         Ok(a) => a,
-        Err((s, c, m)) => return crate::util::json_err(s, c, &m),
+        Err(e) => return json_err(e.status, e.code, &e.message),
     };
     if !redirect_allowed(&app, &redirect_uri) {
-        return crate::util::json_err(
+        return json_err(
             400,
             "invalid_request",
             "redirect_uri is not registered for this app",
         );
     }
-    crate::util::json_ok(serde_json::json!({
+    ok_json(serde_json::json!({
         "ok": true,
         "app": {
             "appId": app.app_id,
             "name": app.name,
             "description": app.description,
+            "iconUrl": crate::validate::normalize_icon_url(app.icon_url.as_deref()),
+            "iconPath": format!("/v1/apps/{}/icon", app.app_id),
         },
         "redirectUri": redirect_uri,
         "state": query.state.unwrap_or_default(),
         "responseType": rt,
     }))
-    .unwrap_or_else(|_| crate::util::json_err(500, "internal_error", "serialize failed"))
+    .unwrap_or_else(|e| json_err(e.status, e.code, &e.message))
 }
 
+/// POST /auth/authorize：用户确认后发 code 或直接 token
 pub async fn complete_authorize(
     env: &worker::Env,
     user: &UserRow,
@@ -117,18 +153,7 @@ pub async fn complete_authorize(
     if rt == "code" {
         let code = format!("ac_{}", random_hex(24));
         let expires_at = format_unix_iso(now_ts() + CODE_TTL_SECS);
-        db_run(
-            env,
-            "INSERT INTO auth_codes (code, app_id, user_id, redirect_uri, expires_at, used) VALUES (?1, ?2, ?3, ?4, ?5, 0)",
-            &[
-                js_str(&code),
-                js_str(&app.app_id),
-                js_str(&user.id),
-                js_str(&redirect_uri),
-                js_str(&expires_at),
-            ],
-        )
-        .await?;
+        db_run_auth_code(env, &code, &app.app_id, &user.id, &redirect_uri, &expires_at).await?;
         let mut url = format!("{redirect_uri}?code={code}");
         if !state.is_empty() {
             url.push_str(&format!("&state={state}"));
@@ -151,6 +176,29 @@ pub async fn complete_authorize(
     }))
 }
 
+async fn db_run_auth_code(
+    env: &worker::Env,
+    code: &str,
+    app_id: &str,
+    user_id: &str,
+    redirect_uri: &str,
+    expires_at: &str,
+) -> ApiResult<()> {
+    crate::db::db_run(
+        env,
+        "INSERT INTO auth_codes (code, app_id, user_id, redirect_uri, expires_at, used) VALUES (?1, ?2, ?3, ?4, ?5, 0)",
+        &[
+            js_str(code),
+            js_str(app_id),
+            js_str(user_id),
+            js_str(redirect_uri),
+            js_str(expires_at),
+        ],
+    )
+    .await
+}
+
+/// POST /auth/token：一次性授权码换 JWT
 pub async fn exchange_code(
     env: &worker::Env,
     code: &str,
@@ -167,15 +215,7 @@ pub async fn exchange_code(
         ));
     }
 
-    #[derive(serde::Deserialize)]
-    struct CodeRow {
-        app_id: String,
-        user_id: String,
-        expires_at: String,
-        used: i64,
-    }
-
-    let row = db_first::<CodeRow>(env, "SELECT * FROM auth_codes WHERE code = ?", &[js_str(code)])
+    let row = db_first::<AuthCodeRow>(env, "SELECT * FROM auth_codes WHERE code = ?", &[js_str(code)])
         .await?
         .ok_or_else(|| {
             api_err(
@@ -201,7 +241,7 @@ pub async fn exchange_code(
     }
 
     let user = load_user(env, &row.user_id).await?;
-    db_run(
+    crate::db::db_run(
         env,
         "UPDATE auth_codes SET used = 1 WHERE code = ? AND used = 0",
         &[js_str(code)],
@@ -215,106 +255,4 @@ pub async fn exchange_code(
         "expiresIn": crate::config::token_ttl(env),
         "appId": app.app_id,
     }))
-}
-
-pub async fn create_session(
-    env: &worker::Env,
-    user_id: &str,
-    app_id: Option<&str>,
-) -> ApiResult<(String, String)> {
-    let ttl = crate::config::token_ttl(env);
-    let sid = uuid_v4();
-    let token = sign_token(&crate::config::jwt_secret(env), &sid, ttl);
-    let token_hash = crate::password::hmac_sha256_b64url(&crate::config::jwt_secret(env), &token);
-    let expires = format_unix_iso(now_ts() + ttl);
-    db_run(
-        env,
-        "INSERT INTO sessions (id, user_id, token_hash, expires_at, app_id) VALUES (?1, ?2, ?3, ?4, ?5)",
-        &[
-            js_str(&sid),
-            js_str(user_id),
-            js_str(&token_hash),
-            js_str(&expires),
-            js_str(app_id.unwrap_or("")),
-        ],
-    )
-    .await?;
-    Ok((token, sid))
-}
-
-pub fn now_ts() -> i64 {
-    (worker::Date::now().as_millis() / 1000) as i64
-}
-
-fn uuid_v4() -> String {
-    let mut b = [0u8; 16];
-    getrandom::getrandom(&mut b).expect("random");
-    b[6] = (b[6] & 0x0f) | 0x40;
-    b[8] = (b[8] & 0x3f) | 0x80;
-    let hex = crate::password::bytes_to_hex(&b);
-    format!(
-        "{}-{}-{}-{}-{}",
-        &hex[0..8],
-        &hex[8..12],
-        &hex[12..16],
-        &hex[16..20],
-        &hex[20..32]
-    )
-}
-
-pub fn uuid_v4_pub() -> String {
-    uuid_v4()
-}
-
-pub fn format_unix_iso(ts: i64) -> String {
-    let days = ts.div_euclid(86400);
-    let secs = ts.rem_euclid(86400);
-    let (h, m, s) = (secs / 3600, (secs % 3600) / 60, secs % 60);
-    let (y, mo, d) = civil_from_days(days);
-    format!("{y:04}-{mo:02}-{d:02}T{h:02}:{m:02}:{s:02}Z")
-}
-
-fn civil_from_days(z: i64) -> (i64, u32, u32) {
-    let z = z + 719468;
-    let era = if z >= 0 { z } else { z - 146096 } / 146097;
-    let doe = z - era * 146097;
-    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
-    let y = yoe + era * 400;
-    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-    let mp = (5 * doy + 2) / 153;
-    let d = (doy - (153 * mp + 2) / 5 + 1) as u32;
-    let m = if mp < 10 { mp + 3 } else { mp - 9 } as u32;
-    let y = if m <= 2 { y + 1 } else { y };
-    (y, m, d)
-}
-
-pub fn parse_iso_pub(s: &str) -> i64 {
-    let s = s.trim().replace('T', " ").replace('Z', "");
-    let parts: Vec<&str> = s.split(' ').collect();
-    if parts.len() < 2 {
-        return 0;
-    }
-    let date: Vec<i64> = parts[0]
-        .split('-')
-        .filter_map(|x| x.parse().ok())
-        .collect();
-    let time: Vec<i64> = parts[1]
-        .split(':')
-        .filter_map(|x| x.parse().ok())
-        .collect();
-    if date.len() < 3 || time.len() < 2 {
-        return 0;
-    }
-    let (h, mi, se) = (time[0], time[1], *time.get(2).unwrap_or(&0));
-    days_from_civil(date[0], date[1] as u32, date[2] as u32) * 86400 + h * 3600 + mi * 60 + se
-}
-
-fn days_from_civil(y: i64, m: u32, d: u32) -> i64 {
-    let y = if m <= 2 { y - 1 } else { y };
-    let era = if y >= 0 { y } else { y - 399 } / 400;
-    let yoe = y - era * 400;
-    let mp = if m > 2 { m - 3 } else { m + 9 } as i64;
-    let doy = (153 * mp + 2) / 5 + d as i64 - 1;
-    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-    era * 146097 + doe - 719468
 }

@@ -1,3 +1,5 @@
+//! PBKDF2 密码哈希、HS256 JWT、随机 ID
+
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine as _;
 use hmac::{Hmac, Mac};
@@ -12,12 +14,29 @@ pub fn random_hex(byte_len: usize) -> String {
     buf.iter().map(|b| format!("{b:02x}")).collect()
 }
 
+/// 32 hex 字符的业务主键
 pub fn random_id() -> String {
-    // UUID-like 32 hex + dashes omitted; keep simple unique id
     random_hex(16)
 }
 
-/// `pbkdf2$iterations$saltHex$hashHex`
+/// UUID v4（会话 id 等）
+pub fn uuid_v4() -> String {
+    let mut b = [0u8; 16];
+    getrandom::getrandom(&mut b).expect("random");
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    let hex = bytes_to_hex(&b);
+    format!(
+        "{}-{}-{}-{}-{}",
+        &hex[0..8],
+        &hex[8..12],
+        &hex[12..16],
+        &hex[16..20],
+        &hex[20..32]
+    )
+}
+
+/// 存储格式：`pbkdf2$iterations$saltHex$hashHex`
 pub fn hash_password(password: &str, iterations: u32) -> String {
     let salt_hex = random_hex(16);
     let salt = hex_to_bytes(&salt_hex);
@@ -83,7 +102,7 @@ pub fn b64url(input: &[u8]) -> String {
     URL_SAFE_NO_PAD.encode(input)
 }
 
-/// HS256 JWT，payload: { sid, iat, exp }
+/// HS256 JWT，payload: `{ sid, iat, exp }`
 pub fn sign_token(secret: &str, session_id: &str, ttl_seconds: i64) -> String {
     let now = (worker::Date::now().as_millis() / 1000) as i64;
     let header = br#"{"alg":"HS256","typ":"JWT"}"#;

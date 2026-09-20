@@ -9,6 +9,7 @@ use crate::db::{js_str, load_user, db_first, db_run, public_user, AvatarSeedRow}
 use crate::http::{
     api_err, body_json, body_raw, body_str, ok_json, svg_response, url_decode, ApiResult,
 };
+use crate::logging;
 use crate::password::{hash_password, random_id, verify_password};
 use crate::session::{create_session, require_auth};
 use crate::validate::{
@@ -84,6 +85,14 @@ pub async fn handle_register(req: &mut Request, env: &Env) -> ApiResult<Response
     let user = load_user(env, &id).await?;
     let app_id = app.map(|a| a.app_id);
     let (token, _) = create_session(env, &id, app_id.as_deref()).await?;
+    logging::event(
+        "user_registered",
+        serde_json::json!({
+            "user_id": user.id,
+            "username": user.username,
+            "appId": app_id,
+        }),
+    );
     ok_json(json!({
         "user": public_user(&user),
         "token": token,
@@ -119,6 +128,7 @@ pub async fn handle_login(req: &mut Request, env: &Env) -> ApiResult<Response> {
         ));
     };
     if !ok {
+        logging::event("login_failed", serde_json::json!({ "reason": "invalid_credentials" }));
         return Err(api_err(
             401,
             "invalid_credentials",
@@ -127,6 +137,13 @@ pub async fn handle_login(req: &mut Request, env: &Env) -> ApiResult<Response> {
     }
     let app_id = app.map(|a| a.app_id);
     let (token, _) = create_session(env, &user.id, app_id.as_deref()).await?;
+    logging::event(
+        "user_login",
+        serde_json::json!({
+            "user_id": user.id,
+            "appId": app_id,
+        }),
+    );
     ok_json(json!({
         "user": public_user(&user),
         "token": token,
@@ -246,6 +263,10 @@ pub async fn handle_logout(req: &Request, env: &Env) -> ApiResult<Response> {
         &[js_str(&ctx.session_id)],
     )
     .await?;
+    logging::event(
+        "session_revoked",
+        serde_json::json!({ "user_id": ctx.user.id, "session_id": ctx.session_id }),
+    );
     ok_json(json!({ "ok": true }))
 }
 

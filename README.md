@@ -32,6 +32,7 @@ cloudflare-auth/
 │   ├── session.rs            # 会话签发 + Bearer 鉴权（AuthContext）
 │   ├── time.rs               # Unix ↔ ISO-8601（Worker 安全）
 │   ├── validate.rs           # 业务校验、App 凭证、redirect_uri
+│   ├── logging.rs            # Workers Observability 结构化日志
 │   ├── password.rs           # PBKDF2 + HS256 JWT + 随机 ID
 │   ├── authorize.rs          # OAuth-like 授权流（inspect/complete/exchange）
 │   ├── config.rs             # wrangler [vars] 解析
@@ -131,6 +132,23 @@ npm run deploy               # build + wrangler deploy
 | `JWT_SECRET` | JWT 签名密钥，生产必设 |
 
 `GET /health` 返回当前生效配置快照（不含密钥）。
+
+### Workers Observability
+
+`wrangler.toml` 已开启 Workers Logs（`[observability] enabled = true`，全量采样）。  
+请求摘要与安全相关业务事件以 JSON 对象写入 `console.log`（见 `src/logging.rs`）。  
+**不会**记录密码、JWT、App Secret。
+
+查看：Cloudflare Dashboard → Workers & Pages → **cloudflare-auth** → **Observability**。
+
+```toml
+[observability]
+enabled = true
+head_sampling_rate = 1   # 可按量调低，如 0.1
+
+[observability.logs]
+invocation_logs = true
+```
 
 ---
 

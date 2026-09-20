@@ -9,6 +9,7 @@ use crate::db::{
     js_str, load_owned_app, db_all, db_run, public_app, AppRow,
 };
 use crate::http::{api_err, body_json, body_str, ok_json, svg_response, ApiResult};
+use crate::logging;
 use crate::password::{hash_password, random_hex, random_id};
 use crate::session::require_auth;
 use crate::validate::{normalize_icon_url, serialize_redirect_uris};
@@ -71,6 +72,10 @@ pub async fn handle_create_app(req: &mut Request, env: &Env) -> ApiResult<Respon
     )
     .await?;
     let app = load_owned_app(env, &ctx.user.id, &id).await?;
+    logging::event(
+        "app_created",
+        serde_json::json!({ "app_id": app.app_id, "owner_id": app.owner_id, "name": app.name }),
+    );
     ok_json(json!({
         "app": public_app(&app),
         "appSecret": secret,
@@ -168,6 +173,10 @@ pub async fn handle_rotate_secret(req: &Request, env: &Env, id: &str) -> ApiResu
     )
     .await?;
     let app = load_owned_app(env, &ctx.user.id, id).await?;
+    logging::event(
+        "app_secret_rotated",
+        serde_json::json!({ "app_id": app.app_id, "owner_id": app.owner_id }),
+    );
     ok_json(json!({
         "app": public_app(&app),
         "appSecret": secret,
@@ -185,6 +194,10 @@ pub async fn handle_revoke_app(req: &Request, env: &Env, id: &str) -> ApiResult<
             &[js_str(id)],
         )
         .await?;
+        logging::event(
+            "app_revoked",
+            serde_json::json!({ "app_id": app.app_id, "owner_id": app.owner_id }),
+        );
     }
     let app = load_owned_app(env, &ctx.user.id, id).await?;
     ok_json(json!({ "app": public_app(&app) }))

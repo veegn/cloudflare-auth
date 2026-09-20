@@ -4,11 +4,13 @@
 
 use worker::*;
 
+use crate::config;
 use crate::handlers;
 use crate::http::{json_err, ok_json, preflight, url_decode, with_cors, ApiResult};
-use crate::config;
+use crate::logging;
 
 pub async fn handle(mut req: Request, env: Env, _ctx: worker::Context) -> worker::Result<Response> {
+    let started_ms = Date::now().as_millis();
     let url = req.url()?;
     let full_url = url.to_string();
     let path = {
@@ -20,16 +22,27 @@ pub async fn handle(mut req: Request, env: Env, _ctx: worker::Context) -> worker
         }
     };
     let method = req.method();
+    let method_label = logging::method_label(&method);
 
     if method == Method::Options {
+        logging::http_request(method_label, &path, 204, Date::now().as_millis() - started_ms, None);
         return Ok(preflight());
     }
 
     let result = route(&mut req, &env, method, &path, &url, full_url).await;
-    Ok(with_cors(match result {
-        Ok(r) => r,
-        Err(e) => json_err(e.status, e.code, &e.message),
-    }))
+    let duration_ms = Date::now().as_millis() - started_ms;
+    let response = match result {
+        Ok(r) => {
+            let status = r.status_code();
+            logging::http_request(method_label, &path, status, duration_ms, None);
+            with_cors(r)
+        }
+        Err(e) => {
+            logging::http_request(method_label, &path, e.status, duration_ms, Some(e.code));
+            with_cors(json_err(e.status, e.code, &e.message))
+        }
+    };
+    Ok(response)
 }
 
 async fn route(

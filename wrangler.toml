@@ -9,6 +9,16 @@ routes = [
   { pattern = "auth.dayti.de", custom_domain = true }
 ]
 
+# Workers Observability / Workers Logs
+# Dashboard: Workers & Pages → cloudflare-auth → Observability
+# head_sampling_rate: 1 = 100% 请求采样（鉴权服务建议全采样；量大可降到 0.1）
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+invocation_logs = true
+
 [build]
 command = "worker-build --release"
 

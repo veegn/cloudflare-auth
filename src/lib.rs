@@ -3,7 +3,7 @@
 //! 模块职责：
 //! - `router`：路由表
 //! - `handlers`：各领域 HTTP 处理
-//! - `http` / `db` / `session` / `time` / `validate`：横切支撑
+//! - `http` / `db` / `session` / `time` / `validate` / `logging`：横切支撑
 //! - `password` / `config` / `avatar` / `authorize`：密码与授权流
 
 mod avatar;
@@ -12,6 +12,7 @@ mod config;
 mod db;
 mod handlers;
 mod http;
+mod logging;
 mod password;
 mod router;
 mod session;

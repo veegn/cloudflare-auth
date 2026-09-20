@@ -30,6 +30,7 @@ npm run db:schema:remote
 | `src/session.rs` | `create_session` + `require_auth` → `AuthContext` |
 | `src/time.rs` | Unix ↔ ISO-8601 (use these, not SystemTime) |
 | `src/validate.rs` | Field validation, app credentials, redirect_uris |
+| `src/logging.rs` | Structured Workers Logs events (no secrets/tokens) |
 | `src/config.rs` | Parses `wrangler.toml` `[vars]` |
 | `src/password.rs` | PBKDF2 + HS256 JWT + random ids |
 | `src/authorize.rs` | OAuth-like inspect/complete/exchange (sessions live in `session.rs`) |
@@ -46,6 +47,7 @@ Worker binding: **`env.DB`** (D1), **`env.ASSETS`** (static). Secrets: `JWT_SECR
 - `run_worker_first = true`: every request hits Rust first; unmatched paths fall through to `serve_assets`, which injects `{{APP_NAME}}` / `{{SERVICE_URL}}` into HTML from `[vars]`.
 - After changing `[vars]` or HTML placeholders, **redeploy** — they are not live-editable on disk for production.
 - Custom domain `auth.dayti.de` is in `wrangler.toml` `routes`; `workers_dev = false`.
+- Observability: `[observability] enabled = true` in `wrangler.toml`; app logs go through `src/logging.rs` as JSON `console.log` objects. Never log passwords/JWT/App Secrets. View: dashboard → Worker → Observability.
 - `public/index.html` + `public/console.js` call APIs **same-origin** (`api('/auth/…')`). Do not hardcode a second host in the UI.
 - Brand/config placeholders live only in **HTML** (`{{APP_NAME}}`, `{{SERVICE_URL}}`); `console.js` reads the brand from DOM (`.brand span`).
 - When editing `public/index.html` or `console.js` on Windows, watch **CRLF** and UTF-8 (em-dash/ellipsis/CJK have broken JS strings before). Prefer exact `indexOf` patches or a UTF-8 Python script over loose regex.
